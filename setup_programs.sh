@@ -41,13 +41,13 @@ echo "========================================"
 # 먼저 진단 리포지토리가 $HOME/diagnosis에 클론되어 있거나 업데이트되어 있다고 가정함.
 # (만약 클론 작업이 별도로 필요하면 별도의 단계로 처리할 수 있음)
 
-# 소스 디렉토리 결정: 우선 $HOME/diagnosis, 없으면 /home/lee/code/diagnosis
+# 소스 디렉토리 결정: 우선 $HOME/diagnosis, 없으면 /home/rainbow/diagnosis
 if [ -d "$HOME/diagnosis" ]; then
     sourceDir="$HOME/diagnosis"
-elif [ -d "/home/lee/code/diagnosis" ]; then
-    sourceDir="/home/lee/code/diagnosis"
+elif [ -d "/home/rainbow/diagnosis" ]; then
+    sourceDir="/home/rainbow/diagnosis"
 else
-    echo "진단 프로그램 디렉토리가 존재하지 않습니다: $HOME/diagnosis 또는 /home/lee/code/diagnosis"
+    echo "진단 프로그램 디렉토리가 존재하지 않습니다: $HOME/diagnosis 또는 /home/rainbow/diagnosis"
     FAILED+=("진단 프로그램 디렉토리 없음")
 fi
 
