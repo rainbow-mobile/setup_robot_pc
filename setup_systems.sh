@@ -41,6 +41,11 @@ echo "========================================"
 echo "1. 시스템 업데이트 및 apt 패키지 설치"
 echo "========================================"
 
+# Software updater 창과 Orca (스크린리더) 삭제
+echo "[시스템 업데이트] update-notifier와 orca 제거 중..."
+sudo apt remove update-notifier -y || echo "update-notifier 제거 실패 (이미 제거되었을 수 있습니다.)"
+sudo apt remove orca -y || echo "orca 제거 실패 (이미 제거되었을 수 있습니다.)"
+
 # 시스템 업데이트 및 업그레이드 – 별도 체크 없이 실행
 if sudo apt-get update && sudo apt-get upgrade -y; then
     INSTALLED+=("시스템 업데이트 및 업그레이드")
