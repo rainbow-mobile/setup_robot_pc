@@ -328,10 +328,18 @@ echo "자동 로그인 설정"
 echo "========================================"
 if [ -f /etc/gdm3/custom.conf ]; then
     echo "[Auto Login] /etc/gdm3/custom.conf 파일 수정 중..."
-    # 자동 로그인 활성화: 주석 제거 및 값 변경 (현재 사용자를 자동 로그인으로 설정)
-    sudo sed -i 's/^#\?AutomaticLoginEnable\s*=.*/AutomaticLoginEnable = true/' /etc/gdm3/custom.conf
-    sudo sed -i "s/^#\?AutomaticLogin\s*=.*/AutomaticLogin = $USER/" /etc/gdm3/custom.conf
-    echo "[Auto Login] 자동 로그인 설정 완료 (사용자: $USER)."
+    # [daemon] 섹션이 없으면 추가
+    if ! grep -q "^\[daemon\]" /etc/gdm3/custom.conf; then
+        echo "[daemon]" | sudo tee -a /etc/gdm3/custom.conf
+    fi
+    # 기존 AutomaticLogin 관련 항목을 주석 처리
+    sudo sed -i '/^\[daemon\]/,/^\[/ s/^\(AutomaticLoginEnable\s*=.*\)$/#\1/' /etc/gdm3/custom.conf
+    sudo sed -i '/^\[daemon\]/,/^\[/ s/^\(AutomaticLogin\s*=.*\)$/#\1/' /etc/gdm3/custom.conf
+    # [daemon] 섹션 바로 아래에 새로운 설정 추가
+    sudo sed -i "/^\[daemon\]/a AutomaticLoginEnable=true\nAutomaticLogin=$USER" /etc/gdm3/custom.conf
+    echo "[Auto Login] 변경 내용:"
+    grep -E "AutomaticLoginEnable|AutomaticLogin" /etc/gdm3/custom.conf
+    echo "[Auto Login] 변경 사항이 적용되려면 시스템 재시작 또는 gdm3 재시작이 필요합니다."
 else
     echo "[Auto Login] /etc/gdm3/custom.conf 파일을 찾을 수 없습니다. 자동 로그인 설정을 건너뜁니다."
 fi
