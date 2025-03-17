@@ -31,6 +31,11 @@ run_step() {
     echo "----------------------------------------"
 }
 
+# 실행 시작 시간 기록 및 종료 시 경과 시간 출력 (trap 사용)
+start_time=$(date +%s)
+trap 'end_time=$(date +%s); elapsed=$((end_time - start_time)); echo "총 실행 시간: $elapsed 초"' EXIT
+
+
 
 ########################################
 # 0. git clone 
