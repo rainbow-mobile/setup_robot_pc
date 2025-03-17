@@ -294,29 +294,15 @@ echo "========================================"
 echo "9. 화면 blank(절전) 옵션 비활성화"
 echo "========================================"
 
-# GNOME idle-delay 설정: 0 (초기화, 0이면 자동 꺼짐 없음)
-if gsettings set org.gnome.desktop.session idle-delay 0; then
-    INSTALLED+=("GNOME idle-delay 0 설정")
-else
-    FAILED+=("GNOME idle-delay 0 설정 실패")
-fi
+# GNOME 및 power 관련 설정: idle-delay, screensaver, 그리고 power daemon 설정
+echo "[Power Saving] GNOME 및 전원 관리 설정 변경..."
+gsettings set org.gnome.desktop.session idle-delay 0
+gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
+gsettings set org.gnome.desktop.screensaver lock-enabled false
 
-# GNOME 스크린세이버의 자동 활성화를 비활성화 (화면이 자동으로 꺼지지 않음)
-
-if gsettings set org.gnome.desktop.screensaver idle-activation-enabled false; then
-    INSTALLED+=("GNOME screensaver idle-activation-enabled 설정")
-else
-    FAILED+=("GNOME screensaver idle-activation-enabled 설정 실패")
-fi
-
-
-# GNOME 스크린세이버의 잠금 기능 비활성화 (자동 잠금 해제)
-
-if gsettings set org.gnome.desktop.screensaver lock-enabled false; then
-    INSTALLED+=("GNOME screensaver lock-enabled")
-else
-    FAILED+=("GNOME screensaver lock-enabled 설정 실패")
-fi
+# GNOME power plugin의 화면 절전 시간(AC, 배터리 모드) 모두 0(never)로 설정
+gsettings set org.gnome.settings-daemon.plugins.power sleep-display-ac 0
+gsettings set org.gnome.settings-daemon.plugins.power sleep-display-battery 0
 
 # X 환경에서 실행 중이면 xset 명령어 실행 (DISPLAY 환경 변수 확인)
 if [ -z "$DISPLAY" ]; then
