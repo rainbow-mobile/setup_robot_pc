@@ -301,6 +301,23 @@ else
     FAILED+=("GNOME idle-delay 0 설정 실패")
 fi
 
+# GNOME 스크린세이버의 자동 활성화를 비활성화 (화면이 자동으로 꺼지지 않음)
+
+if gsettings set org.gnome.desktop.screensaver idle-activation-enabled false; then
+    INSTALLED+=("GNOME screensaver idle-activation-enabled 설정")
+else
+    FAILED+=("GNOME screensaver idle-activation-enabled 설정 실패")
+fi
+
+
+# GNOME 스크린세이버의 잠금 기능 비활성화 (자동 잠금 해제)
+
+if gsettings set org.gnome.desktop.screensaver lock-enabled false; then
+    INSTALLED+=("GNOME screensaver lock-enabled")
+else
+    FAILED+=("GNOME screensaver lock-enabled 설정 실패")
+fi
+
 # X 환경에서 실행 중이면 xset 명령어 실행 (DISPLAY 환경 변수 확인)
 if [ -z "$DISPLAY" ]; then
     echo "DISPLAY 환경 변수가 설정되지 않아 xset 명령어 건너뜁니다."
