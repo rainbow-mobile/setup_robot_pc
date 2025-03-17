@@ -281,6 +281,33 @@ EOF' && sudo udevadm control --reload-rules && sudo udevadm trigger"
 #    "[ -x \$(command -v pm2) ]" \
 #    "npm install -g pm2 && pm2 start --cwd ~/web_robot_server src/server.js --name 'MobileServer' && pm2 start ~/slamnav2/SLAMNAV2 --name 'SLAMNAV2' && pm2 start --cwd ~/app_taskman #TaskMan --name 'TaskMan' && pm2 start npm --name 'MobileWebUI' --cwd ~/web_robot_ui -- start && pm2 save && eval \"\$(pm2 startup | tail -n 1)\""
 
+
+########################################
+# 9. 화면 blank(절전) 옵션 비활성화 (never)
+########################################
+echo "========================================"
+echo "9. 화면 blank(절전) 옵션 비활성화"
+echo "========================================"
+
+# GNOME idle-delay 설정: 0 (초기화, 0이면 자동 꺼짐 없음)
+if gsettings set org.gnome.desktop.session idle-delay 0; then
+    INSTALLED+=("GNOME idle-delay 0 설정")
+else
+    FAILED+=("GNOME idle-delay 0 설정 실패")
+fi
+
+# X 환경에서 실행 중이면 xset 명령어 실행 (DISPLAY 환경 변수 확인)
+if [ -z "$DISPLAY" ]; then
+    echo "DISPLAY 환경 변수가 설정되지 않아 xset 명령어 건너뜁니다."
+    SKIPPED+=("xset 화면 blank 옵션 (DISPLAY 없음)")
+else
+    if xset s off && xset -dpms && xset s noblank; then
+        INSTALLED+=("xset 화면 blank 옵션 비활성화")
+    else
+        FAILED+=("xset 화면 blank 옵션 비활성화 실패")
+    fi
+fi
+
 ##############################
 # 10. (선택) 추가 환경 설정 – 예: TeamViewer, 환경 변수 재적용 등
 ##############################

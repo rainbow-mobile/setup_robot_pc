@@ -31,6 +31,18 @@ run_step() {
     echo "----------------------------------------"
 }
 
+
+########################################
+# 0. git clone 
+########################################
+echo "========================================"
+echo "0. git clone"
+echo "========================================"
+
+# git이 설치되지 않은 경우 자동으로 설치 (이미 설치되어 있으면 건너뜁니다)
+echo "[Pre-setup] git 설치 중..."
+sudo apt-get install git -y
+
 ########################################
 # 1. 진단 단축키 복사 작업
 ########################################
@@ -40,6 +52,16 @@ echo "========================================"
 
 # 먼저 진단 리포지토리가 $HOME/diagnosis에 클론되어 있거나 업데이트되어 있다고 가정함.
 # (만약 클론 작업이 별도로 필요하면 별도의 단계로 처리할 수 있음)
+
+# --- 진단 리포지토리 작업 ---
+# diagnosis 클론 (이미 존재하면 pull)
+if [ ! -d "diagnosis" ]; then
+    echo "[diagnosis] 리포지토리 클론 중..."
+    git clone https://github.com/rainbow-mobile/diagnosis.git
+else
+    echo "[diagnosis] 리포지토리가 이미 존재합니다. 최신 상태로 업데이트합니다."
+    cd diagnosis && git pull && cd ..
+fi
 
 # 소스 디렉토리 결정: 우선 $HOME/diagnosis, 없으면 /home/rainbow/diagnosis
 if [ -d "$HOME/diagnosis" ]; then
