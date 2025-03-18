@@ -176,11 +176,11 @@ echo "========================================"
 
 # 4.1 CMake 3.27.7 (이미 최신 버전이면 skip)
 
-#CMAKE_VERSION=3.27.7
-#run_step "CMake $CMAKE_VERSION" \
-#    "[ -x \$(command -v cmake) ] && cmake --version | grep $CMAKE_VERSION &> /dev/null" \
-#    "wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION.tar.gz && tar -xvzf cmake-$CMAKE_VERSION.tar.gz && cd cmake-$CMAKE_VERSION && ./bootstrap --qt-gui && make -j$NUM_CORES && sudo make install && cd ~"
-#
+CMAKE_VERSION=3.30.5
+run_step "CMake $CMAKE_VERSION" \
+    "[ -x \$(command -v cmake) ] && cmake --version | grep $CMAKE_VERSION &> /dev/null" \
+    "wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION.tar.gz && tar -xvzf cmake-$CMAKE_VERSION.tar.gz && cd cmake-$CMAKE_VERSION && ./bootstrap --qt-gui && make -j$NUM_CORES && sudo make install && cd ~"
+
 ## 4.2 Sophus
 #run_step "Sophus" \
 #    "[ -d Sophus/build ]" \

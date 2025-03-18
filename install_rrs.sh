@@ -34,6 +34,8 @@ while true;do
 done
 
 
+echo "mode = $mode";
+
 echo "Choose dashboard mode...";
 echo "  1. normal Mode";
 echo "  2. techtaka Mode";
@@ -55,7 +57,7 @@ while true;do
 	esac
 done
 
-if ["$mode" == 1];then
+if [ "$mode" == 1 ];then
 	echo "1. Apt Update and Install Curl";
 	sudo apt update && sudo apt-get install -y curl
 	echo "========================================================";
@@ -95,8 +97,6 @@ echo "========================================================";
 
 echo "8. Install pm2(Process Manager)";
 sudo npm i -g pm2
-sudo npm i -g @asyncapi/cli
-sudo npm i --save nesetjs-asyncapi
 echo "========================================================";
 
 echo "9. Clone RRS";
@@ -163,7 +163,8 @@ npm run build
 rm -rf src/ app/\(main\)/ app/\(full-page\)/ store/ pages/ layout/
 echo "========================================================";
 
-if ["$mode" == 1];then
+echo "mode = $mode";
+if [ "$mode" == 1 ];then
 	echo "19. Install mediamtx";
 	cd ~
 	sudo apt install -y gstreamer1.0-rtsp
@@ -186,27 +187,27 @@ if ["$mode" == 1];then
 	systemctl restart mariadb
 	echo "========================================================";
 	
-	echo "22. Set mariadb user";
-	sudo mysql <<EOF
-	create user if not exists 'rainbow'@'%' identified by 'rainbow';
-	grant all privileges on *.* to 'rainbow'@'%';
-	FLUSH PRIVILEGES;
-	CREATE DATABASE if not exists rainbow_rrs default CHARACTER SET UTF8;
-	EOF
-	echo "========================================================";
-	
-	echo "23. Make browser.sh";
-	cd ~
-	cat <<EOF > browser.sh
-	#!/bin/bash
-	export DISPLAY=:0
-	if ! pgrep -x "firefox" > /dev/null
-	then
-	  firefox --kiosk "http://localhost:8180"
-	else
-	  echo "Firefox is already running"
-	fi
-	EOF
+echo "22. Set mariadb user";
+sudo mysql <<EOF
+create user if not exists 'rainbow'@'%' identified by 'rainbow';
+grant all privileges on *.* to 'rainbow'@'%';
+FLUSH PRIVILEGES;
+CREATE DATABASE if not exists rainbow_rrs default CHARACTER SET UTF8;
+EOF
+echo "========================================================";
+
+echo "23. Make browser.sh";
+cd ~
+cat <<EOF > browser.sh
+#!/bin/bash
+export DISPLAY=:0
+if ! pgrep -x "firefox" > /dev/null
+then
+  firefox --kiosk "http://localhost:8180"
+else
+  echo "Firefox is already running"
+fi
+EOF
 	chmod +x browser.sh
 	echo "========================================================";
 	
@@ -235,17 +236,32 @@ if ["$mode" == 1];then
 	    echo "이미 해당 라인이 존재합니다. 추가하지 않았습니다."
 	fi
 	echo "========================================================";
+else
+	echo "mode false = $mode";
 fi
 
 
 echo "Need PM2 Setting?";
 echo "  1. yes";
-echo "  2. no";
+echo "  2. yes (with browser)";
+echo "  3. no";
 while true;do
-	read -p "Enter the number (1/2): " pm2_need
+	read -p "Enter the number (1/2/3): " pm2_need
 	
 	case "$pm2_need" in
 		1)
+			echo "25. Program Manager";
+			pm2 delete all
+			pm2 start npm --name server --cwd ~/web_robot_server -- run start:prod --kill-timeout 3000
+			pm2 start npm --name webui --cwd ~/web_robot_ui -- run start
+			pm2 start ~/slamnav2/SLAMNAV2 --cwd ~/slamnav2 --kill-timeout 3000
+			pm2 start ~/mediamtx
+			pm2 save
+			startup_command=$(pm2 startup | grep 'sudo' | tail -n 1)
+			eval $startup_command
+			break
+			;;
+		2)
 			echo "25. Program Manager";
 			pm2 delete all
 			pm2 start npm --name server --cwd ~/web_robot_server -- run start:prod --kill-timeout 3000
@@ -258,7 +274,7 @@ while true;do
 			eval $startup_command
 			break
 			;;
-		2)
+		3)
 			break
 			;;
 		*)
