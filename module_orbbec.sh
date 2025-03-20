@@ -8,7 +8,7 @@
 # 이미 /etc/profile에 이 내용이 있다면 추가하지 않고 넘어갑니다.
 # 변경사항 적용 후 /etc/profile을 두 번 소스하고, sudo ldconfig 실행, 그리고 ~/.bashrc도 소스합니다.
 #
-# 마지막에 추가로 install_udev_rules.sh 스크립트를 실행합니다.
+# 마지막에 추가로 install_udev_rules.sh 스크립트를 sudo로 실행합니다.
 
 source ./common.sh
 
@@ -28,6 +28,7 @@ else
 export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/usr/local/lib
 export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/rplidar_sdk/output/Linux/Release
 export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/slamnav2
+export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/OrbbecSDK/SDK/lib
 EOF'
 fi
 
@@ -40,10 +41,10 @@ echo "========================================"
 echo "install_udev_rules.sh 스크립트 실행"
 echo "========================================"
 
-# install_udev_rules.sh 스크립트가 존재하면 실행, 없으면 건너뜁니다.
+# install_udev_rules.sh 스크립트가 존재하면 sudo로 실행, 없으면 건너뜁니다.
 if [ -f "./install_udev_rules.sh" ]; then
-    log_msg "install_udev_rules.sh 스크립트를 실행합니다."
-    bash ./install_udev_rules.sh
+    log_msg "install_udev_rules.sh 스크립트를 sudo로 실행합니다."
+    sudo bash ./install_udev_rules.sh
     if [ $? -eq 0 ]; then
         log_msg "install_udev_rules.sh 실행 완료."
     else
