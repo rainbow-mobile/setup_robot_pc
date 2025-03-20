@@ -27,6 +27,7 @@ modules=(
   "create_maps_folder.sh"
   "module_slamnav2.sh"
   "module_program.sh"
+  "moduels_clear.sh"
 )
 
 # 배열에 실패한 모듈 이름을 저장
