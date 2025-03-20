@@ -18,3 +18,7 @@ run_step "net-tools 설치" \
     "dpkg -s net-tools &> /dev/null" \
     "sudo apt-get install net-tools -y"
 
+# sqlite3 설치: 이미 설치되어 있으면 건너뜁니다. firefox 기록을 자동으로 지우기 위함
+run_step "sqlite3 설치" \
+    "dpkg -s sqlite3 &> /dev/null" \
+    "sudo apt-get install sqlite3 -y"
