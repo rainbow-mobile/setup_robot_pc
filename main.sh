@@ -1,17 +1,13 @@
 #!/bin/bash
-# main.sh: 전체 모듈 실행 스크립트
+# main.sh: 전체 모듈 실행 스크립트 (포그라운드 실행)
 
-# nohup 체크: 스크립트가 백그라운드에서 실행되고 있지 않다면 재실행
-if [ "${NOHUP_EXECUTED}" != "true" ]; then
-    echo "스크립트를 백그라운드에서 안전하게 실행합니다..."
-    export NOHUP_EXECUTED=true
-    nohup bash "$0" > setup_log.txt 2>&1 &
-    echo "설치가 백그라운드에서 진행됩니다."
-    echo "로그 확인: tail -f setup_log.txt"
-    exit 0
-fi
+# 먼저 sudo 인증을 받아 sudo 세션을 갱신합니다.
+sudo -v
 
-# 공통 모듈: 각 모듈은 개별적으로 common.sh를 소스하지만, 전체 실행 환경을 위해 한 번 로드해도 좋습니다.
+# sudo 인증 유지 (백그라운드 실행 없이 인터랙티브 환경에서 실행)
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+# 공통 모듈 로드
 source ./common.sh
 
 # 모듈 실행 (각 모듈은 동일 셸에서 실행되어 결과 배열을 공유)
@@ -19,7 +15,7 @@ source ./module_system_update.sh
 source ./module_system_config.sh
 source ./module_swapfile.sh
 source ./module_wireless_driver.sh
-#source ./module_slamnav2.sh
+source ./module_slamnav2.sh
 
 # 팀뷰어 설치 (TeamViewer 설치 모듈)
 source ./module_teamviewer_install.sh
