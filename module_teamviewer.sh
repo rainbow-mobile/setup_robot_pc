@@ -30,9 +30,10 @@ else
 fi
 
 # TeamViewer 리셋: 이미 설치된 경우 리셋만 적용하도록 함
+# teamviewer --daemon 명령 대신 systemctl을 사용하여 teamviewerd 서비스를 제어합니다.
 run_step "TeamViewer 리셋" \
     "test ! -f /etc/teamviewer/global.conf" \
-    "sudo teamviewer --daemon stop && sudo rm -f /etc/teamviewer/global.conf && sudo rm -rf ~/.config/teamviewer/ && sudo teamviewer --daemon start"
+    "sudo systemctl stop teamviewerd.service && sudo rm -f /etc/teamviewer/global.conf && sudo rm -rf ~/.config/teamviewer/ && sudo systemctl start teamviewerd.service"
 
 # Wayland 설정 변경: /etc/gdm3/custom.conf 파일 내의 "#WaylandEnable=false" 주석을 해제
 run_step "Wayland 설정 변경" \
