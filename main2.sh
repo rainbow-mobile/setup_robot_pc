@@ -25,6 +25,7 @@ modules=(
   "module_extra.sh"
   "module_lib.sh"
   "create_maps_folder.sh"
+  "module_program.sh"
 )
 
 for mod in "${modules[@]}"; do
