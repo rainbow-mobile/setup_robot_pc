@@ -33,6 +33,9 @@ source ./module_extra.sh
 # 라이브러리 설치
 source ./module_lib.sh
 
+# maps폴더 생성
+source ./create_maps_folder.sh
+
 # 최종 설치 결과 요약 및 재부팅 안내 모듈
 source ./summary_reboot.sh
 

@@ -19,6 +19,7 @@ echo "========================================"
 # /etc/profile에 필요한 LD_LIBRARY_PATH 라인이 이미 존재하는지 확인
 if grep -q '/usr/local/lib' /etc/profile && \
    grep -q '/home/rainbow/rplidar_sdk/output/Linux/Release' /etc/profile && \
+   grep -q '/home/rainbow/slamnav2' /etc/profile && \
    grep -q '/home/rainbow/OrbbecSDK/SDK/lib' /etc/profile; then
     log_msg "필요한 LD_LIBRARY_PATH 라인이 /etc/profile에 이미 존재합니다. 추가하지 않습니다."
 else
