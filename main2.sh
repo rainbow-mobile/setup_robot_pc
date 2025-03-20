@@ -1,6 +1,7 @@
 #!/bin/bash
-# main.sh: 전체 모듈 실행 스크립트 (포그라운드 실행)
+# main2.sh: 전체 모듈 실행 스크립트 (포그라운드 실행)
 # 각 모듈을 별도 프로세스로 실행하여, 모듈 중 하나의 exit나 오류로 인해 전체 실행이 중단되지 않도록 합니다.
+# 만약 설치 실패한 모듈이 하나라도 있다면, "sudo dpkg --configure -a"를 실행한 후 실패한 모듈만 다시 설치합니다.
 
 # 먼저 sudo 인증을 받아 sudo 세션을 갱신합니다.
 sudo -v
@@ -28,6 +29,9 @@ modules=(
   "module_program.sh"
 )
 
+# 배열에 실패한 모듈 이름을 저장
+failedModules=()
+
 for mod in "${modules[@]}"; do
     if [ -f "$mod" ]; then
         echo "========================================"
@@ -35,21 +39,22 @@ for mod in "${modules[@]}"; do
         echo "========================================"
         # 각 모듈을 별도 프로세스로 실행합니다.
         bash "$mod"
-        if [ $? -ne 0 ]; then
-            echo "[$mod] 실행 중 오류 발생, 계속 진행합니다."
+        ret=$?
+        if [ $ret -ne 0 ]; then
+            echo "[$mod] 실행 중 오류 발생 (종료 코드: $ret), 계속 진행합니다."
+            failedModules+=("$mod")
         fi
     else
         echo "[$mod] 파일을 찾을 수 없습니다."
     fi
 done
 
-# 최종 설치 결과 요약 및 재부팅 안내 (공유 환경이 필요하면 이 부분은 source 방식으로 수정)
-if [ -f "summary_reboot.sh" ]; then
+# 실패한 모듈이 하나라도 있다면 dpkg 설정 재구성 후 재실행
+if [ ${#failedModules[@]} -ne 0 ]; then
     echo "========================================"
-    echo "최종 설치 결과 요약 및 재부팅 안내"
+    echo "설치 실패한 모듈이 있으므로, sudo dpkg --configure -a 를 실행합니다."
     echo "========================================"
-    source ./summary_reboot.sh
-else
-    echo "summary_reboot.sh 파일을 찾을 수 없습니다."
-fi
+    sudo dpkg --configure -a
+
+    echo "=========================
 
