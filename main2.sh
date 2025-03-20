@@ -14,7 +14,6 @@ modules=(
   "module_system_config.sh"
   "module_swapfile.sh"
   "module_wireless_driver.sh"
-  "module_slamnav2.sh"
   "module_teamviewer_install.sh"
   "module_teamviewer.sh"
   "module_orbbec.sh"
@@ -25,6 +24,7 @@ modules=(
   "module_extra.sh"
   "module_lib.sh"
   "create_maps_folder.sh"
+  "module_slamnav2.sh"
   "module_program.sh"
 )
 
