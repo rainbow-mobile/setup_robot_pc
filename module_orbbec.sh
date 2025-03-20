@@ -15,6 +15,7 @@ run_step "Append LD_LIBRARY_PATH to /etc/profile" \
 export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/usr/local/lib
 export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/rplidar_sdk/output/Linux/Release
 export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/OrbbecSDK/SDK/lib
+export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/slamnav2
 EOF'"
 
 # 프로파일 변경사항 적용: /etc/profile 두 번 소스, ldconfig 실행, ~/.bashrc 소스
