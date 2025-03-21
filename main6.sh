@@ -4,8 +4,7 @@
 # 만약 설치 실패한 모듈이 하나라도 있다면, "sudo dpkg --configure -a"를 실행한 후 실패한 모듈만 다시 설치합니다.
 
 
-# 오로지 슬램 관련된 것만 테스트 진행하기 위함
-# 주석된것을 개별적으로 설치하니까 성공함
+# main5가 안될경우에 시도, 순서만 변경
 
 # 먼저 sudo 인증을 받아 sudo 세션을 갱신합니다.
 sudo -v
@@ -15,21 +14,21 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # 실행할 모듈 목록 (모든 모듈은 현재 디렉토리에 있다고 가정)
 modules=(
-  #"module_teamviewer_without_other.sh"
+  "module_lib.sh"
+  "module_screen.sh"
   "module_system_update.sh"
   "module_system_config.sh"
   "module_swapfile.sh"
-  #"module_wireless_driver.sh"
   "module_orbbec.sh"
   "module_usb_serial.sh"
   "module_udev.sh"
-  #"module_screen.sh"
   "module_extra.sh"
-  #"module_lib.sh"
   "create_maps_folder.sh"
   "module_slamnav2_lite.sh"
   "module_program.sh"
-  #"module_network_ethernet.sh"
+  "module_wireless_driver.sh"
+  "module_network_ethernet.sh"
+  #"module_teamviewer_without_other.sh"
   
 )
 

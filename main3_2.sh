@@ -15,21 +15,11 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # 실행할 모듈 목록 (모든 모듈은 현재 디렉토리에 있다고 가정)
 modules=(
-  #"module_teamviewer_without_other.sh"
-  "module_system_update.sh"
-  "module_system_config.sh"
-  "module_swapfile.sh"
-  #"module_wireless_driver.sh"
-  "module_orbbec.sh"
-  "module_usb_serial.sh"
-  "module_udev.sh"
-  #"module_screen.sh"
-  "module_extra.sh"
-  #"module_lib.sh"
-  "create_maps_folder.sh"
-  "module_slamnav2_lite.sh"
-  "module_program.sh"
-  #"module_network_ethernet.sh"
+  "module_network_ethernet.sh"
+  "module_teamviewer_without_other.sh"
+  "module_wireless_driver.sh"
+  "module_screen.sh"
+  "module_lib.sh"
   
 )
 
