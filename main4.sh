@@ -25,6 +25,7 @@ modules=(
   "create_maps_folder.sh"
   "module_slamnav2_lite.sh"
   "module_program.sh"
+  "module_network_ethernet.sh"
   
 )
 
