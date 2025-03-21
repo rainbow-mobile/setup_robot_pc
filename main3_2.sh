@@ -15,11 +15,11 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # 실행할 모듈 목록 (모든 모듈은 현재 디렉토리에 있다고 가정)
 modules=(
-  "module_network_ethernet.sh"
+  #"module_network_ethernet.sh"
   "module_teamviewer_without_other.sh"
   "module_wireless_driver.sh"
-  "module_screen.sh"
-  "module_lib.sh"
+  #"module_screen.sh"
+  #"module_lib.sh"
   
 )
 
