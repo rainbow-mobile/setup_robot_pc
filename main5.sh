@@ -28,7 +28,7 @@ modules=(
   "module_lib.sh"
   "module_screen.sh"
   "module_network_ethernet.sh"
-  "module_teamviewer_without_other.sh"
+  #"module_teamviewer_without_other.sh"
   
 )
 
