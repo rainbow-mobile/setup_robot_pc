@@ -1,12 +1,11 @@
 #!/bin/bash
-# setup_light_fixed.sh
+# setup_light.sh
 # 통합 설치 스크립트 (선택된 일부 단계 제외)
 # - Node.js 및 Mobile/Task/Web 환경 설치 제외
 # - 화면 blank(절전) 옵션 비활성화 제외
 # - 자동 로그인 설정(GDM3 기준) 제외
 #
-# 기존 스크립트에서 apt 패키지 설치 부분을 수정하여,
-# dpkg -s 체크 없이 무조건 설치를 시도하고, 로그 정보를 더 자세히 남기도록 개선했습니다.
+# 사용 전 각 단계별 체크 명령 및 설치 명령을 환경에 맞게 수정하세요.
 
 sudo -v
 
@@ -45,7 +44,7 @@ NUM_CORES=$(nproc)
 log_msg "감지된 CPU 코어: $NUM_CORES개"
 
 ########################################
-# 2. run_step 함수 정의 (패키지 설치 외 단계용)
+# 2. run_step 함수 정의
 ########################################
 run_step() {
     local name="$1"
@@ -54,10 +53,10 @@ run_step() {
     
     log_msg ">> [$name] 진행 중..."
     if eval "$check_cmd"; then
-        log_msg "   [$name] 이미 설치됨/설정됨, 건너뜁니다."
+        log_msg "   [$name] 이미 설치됨, 건너뜁니다."
         SKIPPED+=("$name")
     else
-        log_msg "   [$name] 설치/설정 시도..."
+        log_msg "   [$name] 설치 중..."
         if eval "$install_cmd"; then
             log_msg "   [$name] 완료됨"
             INSTALLED+=("$name")
@@ -78,22 +77,16 @@ log_msg "========================================"
 
 # 불필요한 패키지 제거
 log_msg "[시스템] 불필요한 패키지 제거 중..."
-if sudo apt remove -y update-notifier orca; then
-    log_msg "[시스템] update-notifier, orca 제거 완료 (또는 이미 제거됨)"
-else
-    log_msg "[경고] update-notifier, orca 제거 과정에서 오류가 발생했을 수 있음."
-fi
+sudo apt remove -y update-notifier orca || log_msg "일부 패키지 제거 실패(이미 제거되었거나 존재하지 않을 수 있음)"
 
 # 시스템 업데이트
-log_msg "[시스템] apt-get update & upgrade 실행..."
 if sudo apt-get update && sudo apt-get upgrade -y; then
     INSTALLED+=("시스템 업데이트 완료")
 else
     FAILED+=("시스템 업데이트 실패")
-    log_msg "[오류] 시스템 업데이트(apt-get upgrade) 중 문제가 발생했습니다. 로그 확인 요망."
 fi
 
-# (중요) apt 패키지 설치 목록
+# apt 패키지 설치 목록
 APT_PACKAGES=(
   curl
   libqt5websockets5-dev
@@ -143,17 +136,10 @@ APT_PACKAGES=(
   expect
 )
 
-log_msg "[시스템] APT 패키지 설치(무조건 시도). 이미 설치된 경우 별도 조치 없음."
 for pkg in "${APT_PACKAGES[@]}"; do
-    log_msg ">>> [$pkg] 설치 시도 중..."
-    if sudo apt-get install -y "$pkg"; then
-        log_msg ">>> [$pkg] 설치(또는 업데이트) 완료"
-        # INSTALLED 배열에는 "전체 시스템 업데이트"와 구분하기 위해
-        # 여기서는 개별 패키지 이름을 굳이 넣지 않아도 되지만, 필요시 추가 가능
-    else
-        log_msg ">>> [$pkg] 설치 실패!"
-        FAILED+=("apt 패키지: $pkg")
-    fi
+    run_step "apt 패키지: $pkg" \
+      "dpkg -s $pkg &> /dev/null" \
+      "sudo apt-get install -y $pkg"
 done
 
 ########################################
@@ -188,6 +174,15 @@ run_step "GRUB 설정" \
     "grep 'usbcore.autosuspend=-1 intel_pstate=disable' /etc/default/grub &> /dev/null" \
     "sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"$/ usbcore.autosuspend=-1 intel_pstate=disable\"/' /etc/default/grub && sudo update-grub"
 
+# 4.3 자동 업데이트 비활성화
+run_step "자동 업데이트 비활성화" \
+    "grep 'APT::Periodic::Update-Package-Lists \"0\"' /etc/apt/apt.conf.d/20auto-upgrades &> /dev/null" \
+    "sudo sh -c 'cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
+APT::Periodic::Update-Package-Lists \"0\";
+APT::Periodic::Download-Upgradeable-Packages \"0\";
+APT::Periodic::AutocleanInterval \"0\";
+APT::Periodic::Unattended-Upgrade \"0\";
+EOF' && sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades && gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
 ########################################
 # 5. 스왑파일 설정
@@ -241,18 +236,99 @@ run_step "CMake $CMAKE_VERSION" \
      sudo make install && \
      cd ~"
 
+# 7.2 Sophus
+run_step "Sophus" \
+    "[ -d Sophus/build ]" \
+    "git clone https://github.com/strasdat/Sophus.git && \
+     cd Sophus && \
+     mkdir -p build && cd build && \
+     cmake .. -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DSOPHUS_USE_BASIC_LOGGING=ON && \
+     make -j$NUM_CORES && \
+     sudo make install && \
+     cd ~"
+
+# 7.3 GTSAM (4.2.0)
+run_step "GTSAM" \
+    "[ -d gtsam/build ]" \
+    "git clone https://github.com/borglab/gtsam.git && \
+     cd gtsam && \
+     git checkout 4.2.0 && \
+     mkdir -p build && cd build && \
+     cmake .. -DGTSAM_USE_SYSTEM_EIGEN=ON -DGTSAM_BUILD_TESTS=OFF -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF && \
+     make -j$NUM_CORES && \
+     sudo make install && \
+     cd ~"
+
+# 7.4 OMPL (1.6.0)
+run_step "OMPL" \
+    "[ -d ompl/build ]" \
+    "git clone https://github.com/ompl/ompl.git && \
+     cd ompl && \
+     git checkout 1.6.0 && \
+     mkdir -p build && cd build && \
+     cmake .. && \
+     make -j$NUM_CORES && \
+     sudo make install && \
+     cd ~"
+
+# 7.5 socket.io-client-cpp
+run_step "socket.io-client-cpp" \
+    "[ -d socket.io-client-cpp/build ]" \
+    "git clone --recurse-submodules https://github.com/socketio/socket.io-client-cpp.git && \
+     cd socket.io-client-cpp && \
+     mkdir -p build && cd build && \
+     cmake .. -DBUILD_SHARED_LIBS=ON -DLOGGING=OFF && \
+     make -j$NUM_CORES && \
+     sudo make install && \
+     cd ~"
+
+# 7.6 OctoMap (1.10.0)
+run_step "OctoMap" \
+    "[ -d octomap/build ]" \
+    "git clone https://github.com/OctoMap/octomap.git && \
+     cd octomap && \
+     git checkout v1.10.0 && \
+     mkdir -p build && cd build && \
+     cmake .. -DBUILD_DYNAMICETD3D=OFF -DBUILD_OCTOVIS_SUBPROJECT=OFF -DBUILD_TESTING=OFF && \
+     make -j$NUM_CORES && \
+     sudo make install && \
+     cd ~"
+
+# 7.7 PDAL
+run_step "PDAL" \
+    "dpkg -s pdal libpdal-dev &> /dev/null" \
+    "sudo apt-get update && sudo apt-get install -y pdal libpdal-dev"
+
+# 7.8 Livox SDK2
+run_step "Livox SDK2" \
+    "[ -d Livox-SDK2/build ]" \
+    "git clone https://github.com/Livox-SDK/Livox-SDK2.git && \
+     cd Livox-SDK2 && \
+     mkdir -p build && cd build && \
+     cmake .. && \
+     make -j$NUM_CORES && \
+     sudo make install && \
+     cd ~"
 
 ########################################
 # (선택) Node.js 및 Mobile/Task/Web 환경 설치 - 제외
 ########################################
 
 ########################################
-# 8. TeamViewer 리셋 (또는 설치+리셋)
+# 8. TeamViewer 설치/리셋
 ########################################
 log_msg "========================================"
-log_msg "6. TeamViewer 리셋"
+log_msg "6. TeamViewer 설치 및 리셋"
 log_msg "========================================"
 
+# 8.1 팀뷰어 호스트가 미설치된 경우 설치
+run_step "TeamViewer Host 설치" \
+    "dpkg -s teamviewer-host &> /dev/null" \
+    "sudo apt-get update && \
+     wget -P ~/ https://download.teamviewer.com/download/linux/teamviewer-host_amd64.deb && \
+     sudo apt install -y ~/teamviewer-host_amd64.deb"
+
+# 8.2 설치 후 TeamViewer 리셋
 run_step "TeamViewer 리셋" \
     "test ! -f /etc/teamviewer/global.conf" \
     "sudo teamviewer --daemon stop && \
