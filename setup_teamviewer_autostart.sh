@@ -1,34 +1,40 @@
 #!/bin/bash
-#
-# TeamViewer 자동 실행(데몬 + GUI) 설정 스크립트
-# 1) 데몬(teamviewerd) systemd 서비스 enable + start
-# 2) /usr/local/bin/teamviewer-fixed 생성
-# 3)   LD_LIBRARY_PATH unset & QT_QPA_PLATFORM=xcb 강제
-# 4) ~/.config/autostart/teamviewer.desktop 생성
-
 set -e
 
-# 0. 팀뷰어 실행 파일 경로 확인
+# ------------------------------------------------------------------
+# TeamViewer 완전 자동설정 스크립트
+# 1) teamviewerd 서비스 마스킹 해제 → 데몬 등록·시작
+# 2) /usr/local/bin/teamviewer-fixed 스크립트 생성
+#    → LD_LIBRARY_PATH 제거, XCB 플랫폼 강제
+# 3) ~/.config/autostart/teamviewer.desktop 생성
+#    → 로그인 시 teamviewer-fixed 자동 실행
+# ------------------------------------------------------------------
+
+# 0. teamviewer 실행 파일 위치 확인
 TV_BIN="$(which teamviewer || true)"
 if [[ -z "$TV_BIN" ]]; then
-  echo "teamviewer 실행 파일을 찾을 수 없습니다. 먼저 TeamViewer DEB 패키지를 설치하세요."
+  echo "ERROR: teamviewer 실행 파일을 찾을 수 없습니다."
+  echo "먼저 'sudo apt install teamviewer' 등으로 설치해주세요."
   exit 1
 fi
 
-echo "▶ teamviewerd 서비스 활성화"
+echo "▶1) teamviewerd 서비스 unmask → daemon-reload → enable & start"
+sudo systemctl unmask teamviewerd.service
+sudo systemctl daemon-reload
 sudo systemctl enable --now teamviewerd.service
 
-echo "▶ /usr/local/bin/teamviewer-fixed 생성"
-sudo bash -c "cat > /usr/local/bin/teamviewer-fixed" <<'EOF'
+echo "▶2) /usr/local/bin/teamviewer-fixed 생성"
+sudo bash -c "cat > /usr/local/bin/teamviewer-fixed" <<EOF
 #!/bin/bash
-# LD_LIBRARY_PATH 제거하고 X11(xcb) 백엔드로 TeamViewer GUI 실행
-env -u LD_LIBRARY_PATH QT_QPA_PLATFORM=xcb $(which teamviewer)
+# LD_LIBRARY_PATH 제거하고 X11(xcb) 백엔드로 TeamViewer 실행
+env -u LD_LIBRARY_PATH QT_QPA_PLATFORM=xcb $TV_BIN
 EOF
 sudo chmod +x /usr/local/bin/teamviewer-fixed
 
-echo "▶ Autostart .desktop 파일 생성"
-mkdir -p ~/.config/autostart
-cat > ~/.config/autostart/teamviewer.desktop <<'EOF'
+echo "▶3) GUI 자동실행용 .desktop 생성"
+AUTOSTART_DIR="$HOME/.config/autostart"
+mkdir -p "$AUTOSTART_DIR"
+cat > "$AUTOSTART_DIR/teamviewer.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Exec=/usr/local/bin/teamviewer-fixed
@@ -39,5 +45,7 @@ Name=TeamViewer
 Comment=Start TeamViewer GUI after login (LD_LIBRARY_PATH unset, XCB forced)
 EOF
 
-echo "✅ 완료!  재부팅 후에도 데몬과 GUI가 자동으로 실행됩니다."
+echo "✅ 설정 완료!"
+echo "  • teamviewerd 데몬이 부팅 시 자동 시작됩니다."
+echo "  • 로그인 후 GUI(teamviewer-fixed)가 자동 실행됩니다."
 
