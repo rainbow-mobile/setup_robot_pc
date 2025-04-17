@@ -332,16 +332,16 @@ run_step "Livox SDK2" \
 ########################################
 # 8. TeamViewer 리셋 (또는 설치+리셋)
 ########################################
-log_msg "========================================"
-log_msg "6. TeamViewer 리셋"
-log_msg "========================================"
+#log_msg "========================================"
+#log_msg "6. TeamViewer 리셋"
+#log_msg "========================================"
 
-run_step "TeamViewer 리셋" \
-    "test ! -f /etc/teamviewer/global.conf" \
-    "sudo teamviewer --daemon stop && \
-     sudo rm -f /etc/teamviewer/global.conf && \
-     sudo rm -rf ~/.config/teamviewer/ && \
-     sudo teamviewer --daemon start"
+#run_step "TeamViewer 리셋" \
+#    "test ! -f /etc/teamviewer/global.conf" \
+#    "sudo teamviewer --daemon stop && \
+#     sudo rm -f /etc/teamviewer/global.conf && \
+#     sudo rm -rf ~/.config/teamviewer/ && \
+#     sudo teamviewer --daemon start"
 
 ########################################
 # 9. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트
