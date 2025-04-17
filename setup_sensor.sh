@@ -2,81 +2,71 @@
 set -e
 
 ###############################################################################
-# 통합 설치 스크립트
-# - rplidar_sdk
-# - OrbbecSDK (v1.10.11)
-# - SICK Safety Scanners Base
-#
-# 사용법: 
-#   1) 이 파일에 실행 권한 부여: chmod +x install_all.sh
-#   2) 실행: ./install_all.sh   (또는 sudo ./install_all.sh)
+# install_all.sh
+# - 실행 위치: /home/setup_robot_pc
+# - rplidar_sdk, OrbbecSDK, sick_safetyscanners_base 설치
+# - 이미 설치된 디렉토리가 있으면 건너뜁니다.
 ###############################################################################
 
-echo "========== START INSTALLATION =========="
+# 스크립트 위치 (BASE_DIR)에 설치
+BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
+echo ">>> BASE_DIR: $BASE_DIR"
 
-############################
+########################################
 # 1. rplidar_sdk 설치
-############################
+########################################
 echo
-echo ">>> [rplidar_sdk] 설치 시작"
-cd "$HOME"
-if [ ! -d "rplidar_sdk" ]; then
-    git clone https://github.com/Slamtec/rplidar_sdk.git
+echo "=== [STEP 1] rplidar_sdk 설치 ==="
+if [ -d "$BASE_DIR/rplidar_sdk" ]; then
+    echo "[SKIP] rplidar_sdk 디렉토리가 이미 존재합니다."
 else
-    echo "[rplidar_sdk] 이미 클론됨, 업데이트 및 재빌드"
-    cd rplidar_sdk && git pull
+    echo "[INSTALL] rplidar_sdk 클론 및 빌드 시작"
+    git clone https://github.com/Slamtec/rplidar_sdk.git "$BASE_DIR/rplidar_sdk"
+    cd "$BASE_DIR/rplidar_sdk"
+    make
+    echo "[DONE] rplidar_sdk 설치 완료"
 fi
-cd rplidar_sdk
-echo "[rplidar_sdk] 빌드 중..."
-make
-echo "[rplidar_sdk] 설치 완료"
 
-############################
+########################################
 # 2. OrbbecSDK 설치
-############################
+########################################
 echo
-echo ">>> [OrbbecSDK] 설치 시작"
-cd "$HOME"
-if [ ! -d "OrbbecSDK" ]; then
-    git clone https://github.com/orbbec/OrbbecSDK.git
+echo "=== [STEP 2] OrbbecSDK 설치 ==="
+if [ -d "$BASE_DIR/OrbbecSDK" ]; then
+    echo "[SKIP] OrbbecSDK 디렉토리가 이미 존재합니다."
 else
-    echo "[OrbbecSDK] 이미 클론됨, 업데이트"
-    cd OrbbecSDK && git fetch
+    echo "[INSTALL] OrbbecSDK 클론 및 설치 시작"
+    git clone https://github.com/orbbec/OrbbecSDK.git "$BASE_DIR/OrbbecSDK"
+    cd "$BASE_DIR/OrbbecSDK"
+    git checkout v1.10.11
+    echo "[INSTALL] udev 규칙 설치 실행"
+    # 스크립트 위치 확인 후 실행
+    if [ -f "misc/scripts/install_udev_rules.sh" ]; then
+        sudo bash misc/scripts/install_udev_rules.sh
+    else
+        sudo bash install_udev_rules.sh
+    fi
+    echo "[DONE] OrbbecSDK 설치 완료"
 fi
-cd OrbbecSDK
-git checkout v1.10.11
-echo "[OrbbecSDK] udev 규칙 설치 스크립트 실행"
-# 실제 스크립트 경로가 misc/scripts/install_udev_rules.sh 인 경우:
-if [ -f "misc/scripts/install_udev_rules.sh" ]; then
-    sudo bash misc/scripts/install_udev_rules.sh
-else
-    # 루트 디렉토리에 있는 경우:
-    sudo bash install_udev_rules.sh
-fi
-echo "[OrbbecSDK] 설치 완료"
 
-############################
-# 3. SICK Safety Scanners Base 설치
-############################
+########################################
+# 3. sick_safetyscanners_base 설치
+########################################
 echo
-echo ">>> [sick_safetyscanners_base] 설치 시작"
-cd "$HOME"
-if [ ! -d "sick_safetyscanners_base" ]; then
-    git clone https://github.com/SICKAG/sick_safetyscanners_base.git
+echo "=== [STEP 3] sick_safetyscanners_base 설치 ==="
+if [ -d "$BASE_DIR/sick_safetyscanners_base" ]; then
+    echo "[SKIP] sick_safetyscanners_base 디렉토리가 이미 존재합니다."
 else
-    echo "[sick_safetyscanners_base] 이미 클론됨, 업데이트"
-    cd sick_safetyscanners_base && git pull
+    echo "[INSTALL] sick_safetyscanners_base 클론 및 빌드 시작"
+    git clone https://github.com/SICKAG/sick_safetyscanners_base.git "$BASE_DIR/sick_safetyscanners_base"
+    cd "$BASE_DIR/sick_safetyscanners_base"
+    mkdir -p build && cd build
+    cmake ..
+    make -j"$(nproc)"
+    sudo make install
+    echo "[DONE] sick_safetyscanners_base 설치 완료"
 fi
-cd sick_safetyscanners_base
-mkdir -p build && cd build
-echo "[sick_safetyscanners_base] cmake 구성 중..."
-cmake ..
-echo "[sick_safetyscanners_base] 병렬 빌드 중..."
-make -j$(nproc)
-echo "[sick_safetyscanners_base] 설치 중..."
-sudo make install
-echo "[sick_safetyscanners_base] 설치 완료"
 
 echo
-echo "========== ALL INSTALLATIONS COMPLETE =========="
+echo "=== ALL INSTALLATION STEPS COMPLETE ==="
 
