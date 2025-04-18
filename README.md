@@ -3,7 +3,7 @@
 --- 
 ### Ubuntu 22.04/5이 설치된 PC 기준
 
--  SLAMNAV2 기준
+-  SLAMNAV2 개발환경 및 구동을 위한 스크립트
 1. setup_system_build_env_s100-2.sh
 2. setup_sensor2.sh
 3. setup_programs_slamanv_shortcut.sh
