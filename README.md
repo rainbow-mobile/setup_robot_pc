@@ -1,7 +1,9 @@
 # setup_robot_pc
 
 --- 
-### Ubuntu 22.05기준 설치 
+### Ubuntu 22.04/5이 설치된 PC 기준
+
+-  SLAMNAV2 기준
 1. setup_system_build_env_s100-2.sh
 2. setup_sensor2.sh
 3. setup_programs_slamanv_shortcut.sh
