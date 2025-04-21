@@ -7,7 +7,7 @@ TARGET_DIR="/home/$USERNAME"
 
 echo "작업 디렉토리: $TARGET_DIR"
 
-# 1. RB_MOBILE 클론 (이미 있으면 건너뜀)
+# 1. RB_MOBILE 클론 (없으면 클론, 있으면 건너뜀)
 if [ ! -d "$TARGET_DIR/RB_MOBILE" ]; then
     echo ">> RB_MOBILE 레포지토리 클론 중..."
     git clone https://github.com/yuuujinHeo/RB_MOBILE.git "$TARGET_DIR/RB_MOBILE"
@@ -15,8 +15,18 @@ else
     echo ">> $TARGET_DIR/RB_MOBILE 이미 존재, 클론 건너뜀"
 fi
 
-# 2. RB_MOBILE/release 삭제 (있으면 삭제)
+# RB_MOBILE 디렉토리로 이동
 cd "$TARGET_DIR/RB_MOBILE"
+
+# 1-1. maps 폴더 생성 (없으면)
+if [ ! -d maps ]; then
+    echo ">> maps 디렉토리 없음, 생성 중..."
+    mkdir maps
+else
+    echo ">> maps 디렉토리 이미 존재, 건너뜀"
+fi
+
+# 2. RB_MOBILE/release 삭제 (있으면 삭제)
 if [ -d release ]; then
     echo ">> 기존 release 디렉토리 삭제 중..."
     rm -rf release
