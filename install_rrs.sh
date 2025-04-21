@@ -6,9 +6,19 @@ echo "Choose install mode...";
 echo "  1. First Installation";
 echo "  2. Update RRS, RRSWEB";
 echo "  3. Check Version (test)";
-echo "  4. exit";
+echo "  4. Install InfluxDB";
+echo "  5. Install Taskman";
+echo "  6. exit";
+
+
+export GIT_ASKPASS=echo
+export GIT_USERNAME=yjheo4
+export GIT_PASSWORD_1=zkXoH0E1qjJxcBFk8
+export GIT_PASSWORD_2=IoZk6JvchutCX3407CX
+export GIT_PASSWORD=ghp_$GIT_PASSWORD_1$GIT_PASSWORD_2
+
 while true;do
-	read -p "Enter the number (1/2/3/4): " mode
+	read -p "Enter the number (1/2/3/4/5/6): " mode
 	
 	case "$mode" in
 		1)
@@ -24,6 +34,63 @@ while true;do
 			exit 0
 			;;
 		4)
+			echo "Install InfluxDB";
+			cd ~
+			curl -O https://www.influxdata.com/d/install_influxdb3.sh \
+			&& sh install_influxdb3.sh
+			source ~/.bashrc
+			exit 0
+			;;
+		5)
+			echo "Install Taskman";
+			read -p "Install Tag name : " tag
+			
+			sudo apt-get install -y jq
+			alias errcho='>&2 echo'	
+			function gh_curl() {
+			  curl -H "Authorization: token $GIT_PASSWORD" \
+			       -H "Accept: application/vnd.github.v3.raw" \
+			       $@
+			}
+			
+			if [ "$tag" = "latest" ]; then
+			  # Github should return the latest release first.
+			  parser=".[0].assets | map(select(.name == \"taskman.zip\"))[0].id"
+			else
+			  parser=". | map(select(.tag_name == \"$tag\"))[0].assets | map(select(.name == \"taskman.zip\"))[0].id"
+			fi;
+			
+			asset_id=$(gh_curl -s "https://api.github.com/repos/rainbow-mobile/app_taskman/releases" | jq "$parser")
+					
+		
+			echo "Asset ID for taskman.zip found: $asset_id"
+			echo "Starting download of taskman.zip..."
+			
+			if [ "$asset_id" = "null" ]; then
+			  errcho "ERROR: Asset taskman.zip not found for version $tag"
+			  exit 1
+			fi;
+			
+			curl -L -H "Authorization: token $GIT_PASSWORD" \
+			  -H "Accept: application/octet-stream" \
+			  "https://api.github.com/repos/rainbow-mobile/app_taskman/releases/assets/$asset_id" -o "taskman.zip"
+			
+			echo "Download completed: taskman.zip"
+			
+			echo "Extracting taskman.zip"
+			
+			unzip -o taskman.zip
+			rm taskman.zip
+			
+			echo "Download and Extract Done : taskman.zip"
+			
+			pm2 start --cwd ~/taskman taskman
+			pm2 save
+			
+			
+			exit 0
+			;;
+		6)
 			echo "Cancel Installation";
 			exit 0
 			;;
@@ -39,6 +106,7 @@ echo "mode = $mode";
 echo "Choose dashboard mode...";
 echo "  1. normal Mode";
 echo "  2. techtaka Mode";
+echo "  3. normal Mode (with taskman)";
 while true;do
 	read -p "Enter the number (1/2/3): " choice
 	
@@ -51,11 +119,16 @@ while true;do
 			echo "Install Techtaka Mode";
 			break
 			;;
+		3)
+			echo "Install Normal(taskman) Mode";
+			break
+			;;
 		*)
 			echo "Wrong Input";
 			;;
 	esac
 done
+
 
 if [ "$mode" == 1 ];then
 	echo "1. Apt Update and Install Curl";
@@ -74,7 +147,7 @@ if [ "$mode" == 1 ];then
 	echo "========================================================";
 	
 	echo "4. Install NodeJS and npm(node package manager) and mplayer(sound)";
-	sudo apt-get install -y nodejs npm mplayer
+	sudo apt-get install -y nodejs npm mplayer jq
 	echo "========================================================";
 	
 	echo "5. Install NodeJS latest Version";
@@ -88,11 +161,6 @@ fi
 
 echo "7. Check NodeJS Version";
 node --version 
-export GIT_ASKPASS=echo
-export GIT_USERNAME=yjheo4
-export GIT_PASSWORD_1=zkXoH0E1qjJxcBFk8
-export GIT_PASSWORD_2=IoZk6JvchutCX3407CX
-export GIT_PASSWORD=ghp_+$GIT_PASSWORD_1+$GIT_PASSWORD_2
 echo "========================================================";
 
 echo "8. Install pm2(Process Manager)";
@@ -100,6 +168,8 @@ sudo npm i -g pm2
 echo "========================================================";
 
 echo "9. Clone RRS";
+cd ~
+sudo rm -r web_robot_server
 cd ~ && git clone --depth 1 https://$GIT_USERNAME:$GIT_PASSWORD@github.com/rainbow-mobile/web_robot_server.git
 echo "========================================================";
 
@@ -119,7 +189,12 @@ npm run build
 rm -rf src
 echo "========================================================";
 
+cd ~ && git clone --depth 1 https://yjheo4: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@github.com/rainbow-mobile/web_robot_ui.git
+
+
+echo "$GIT_PASSWORD, $GIT_USERNAME"
 echo "13. Clone RRSWEB";
+git remote set-url origin https://$GIT_PASSWORD@github.com/rainbow-mobile/web_robot_ui
 cd ~ && git clone --depth 1 https://$GIT_USERNAME:$GIT_PASSWORD@github.com/rainbow-mobile/web_robot_ui.git
 echo "========================================================";
 
@@ -168,7 +243,7 @@ if [ "$mode" == 1 ];then
 	echo "19. Install mediamtx";
 	cd ~
 	sudo apt install -y gstreamer1.0-rtsp
-	curl -L -o mediamtx.tar.gz https://github.com/bluenviron/mediamtx/releases/download/v1.11.2/mediamtx_v1.11.2_linux_amd64.tar.gz
+	curl -L -o mediamtx.tar.gz https://github.com/bluenviron/mediamtx/releases/download/v1.11.3/mediamtx_v1.11.3_linux_armv7.tar.gz
 	tar -xvzf mediamtx.tar.gz
 	echo "========================================================";
 		
@@ -186,56 +261,95 @@ if [ "$mode" == 1 ];then
 	sudo apt install mariadb-server
 	systemctl restart mariadb
 	echo "========================================================";
-	
-echo "22. Set mariadb user";
-sudo mysql <<EOF
-create user if not exists 'rainbow'@'%' identified by 'rainbow';
-grant all privileges on *.* to 'rainbow'@'%';
-FLUSH PRIVILEGES;
-CREATE DATABASE if not exists rainbow_rrs default CHARACTER SET UTF8;
-EOF
-echo "========================================================";
+		
+	echo "22. Set mariadb user";
+	sudo mysql <<EOF
+	create user if not exists 'rainbow'@'%' identified by 'rainbow';
+	grant all privileges on *.* to 'rainbow'@'%';
+	FLUSH PRIVILEGES;
+	CREATE DATABASE if not exists rainbow_rrs default CHARACTER SET UTF8;
+	EOF
+	echo "========================================================";
 
-echo "23. Make browser.sh";
-cd ~
-cat <<EOF > browser.sh
-#!/bin/bash
-export DISPLAY=:0
-if ! pgrep -x "firefox" > /dev/null
-then
-  firefox --kiosk "http://localhost:8180"
-else
-  echo "Firefox is already running"
-fi
-EOF
-	chmod +x browser.sh
-	echo "========================================================";
-	
-	echo "24. nmcli permissions";
-	# sudoers 파일 경로 (기본 경로 사용)
-	SUDOERS_FILE="/etc/sudoers"
-	
-	# 추가하려는 줄
-	LINE_TO_ADD="rainbow ALL=(ALL) NOPASSWD: /usr/bin/nmcli"
-	
-	# 해당 줄이 이미 sudoers 파일에 존재하는지 확인
-	if ! grep -qF "$LINE_TO_ADD" "$SUDOERS_FILE"; then
-	    # sudoers 파일의 마지막에 추가
-	    echo "$LINE_TO_ADD" | sudo tee -a $SUDOERS_FILE > /dev/null
-	
-	    # sudoers 파일에 문법 오류가 없는지 확인
-	    sudo visudo -c
-	    if [ $? -eq 0 ]; then
-	        echo "sudoers 파일이 성공적으로 업데이트되었습니다."
-	    else
-	        echo "sudoers 파일에 오류가 있습니다. 변경을 롤백합니다."
-	        # 오류가 있으면 변경사항 되돌리기
-	        sudo sed -i '$d' $SUDOERS_FILE
-	    fi
-	else
-	    echo "이미 해당 라인이 존재합니다. 추가하지 않았습니다."
+
+	if [ "$choice" == 3 ];then
+		echo "23. Install taskman";
+		echo "Install Taskman";
+		alias errcho='>&2 echo'	
+		function gh_curl() {
+		  curl -H "Authorization: token $GIT_PASSWORD" \
+		       -H "Accept: application/vnd.github.v3.raw" \
+		       $@
+		}
+			
+	  	parser=".[0].assets | map(select(.name == \"taskman.zip\"))[0].id"
+		asset_id=$(gh_curl -s "https://api.github.com/repos/rainbow-mobile/app_taskman/releases" | jq "$parser")
+					
+		echo "Asset ID for taskman.zip found: $asset_id"
+		echo "Starting download of taskman.zip..."
+		
+		if [ "$asset_id" = "null" ]; then
+		  errcho "ERROR: Asset taskman.zip not found for version"
+		  exit 1
+		fi;
+		
+		curl -L -H "Authorization: token $GIT_PASSWORD" \
+		  -H "Accept: application/octet-stream" \
+		  "https://api.github.com/repos/rainbow-mobile/app_taskman/releases/assets/$asset_id" -o "taskman.zip"
+			
+		echo "Download completed: taskman.zip"
+			
+		echo "Extracting taskman.zip"
+		
+		unzip -o taskman.zip
+		rm taskman.zip
+		
+		echo "Download and Extract Done : taskman.zip"
+			
+			
 	fi
-	echo "========================================================";
+	
+	
+	echo "23. Make browser.sh";
+	cd ~
+	cat <<EOF > browser.sh
+	#!/bin/bash
+	export DISPLAY=:0
+	if ! pgrep -x "firefox" > /dev/null
+	then
+	  firefox --kiosk "http://localhost:8180"
+	else
+	  echo "Firefox is already running"
+	fi
+	EOF
+		chmod +x browser.sh
+		echo "========================================================";
+		
+		echo "24. nmcli permissions";
+		# sudoers 파일 경로 (기본 경로 사용)
+		SUDOERS_FILE="/etc/sudoers"
+		
+		# 추가하려는 줄
+		LINE_TO_ADD="rainbow ALL=(ALL) NOPASSWD: /usr/bin/nmcli"
+		
+		# 해당 줄이 이미 sudoers 파일에 존재하는지 확인
+		if ! grep -qF "$LINE_TO_ADD" "$SUDOERS_FILE"; then
+		    # sudoers 파일의 마지막에 추가
+		    echo "$LINE_TO_ADD" | sudo tee -a $SUDOERS_FILE > /dev/null
+		
+		    # sudoers 파일에 문법 오류가 없는지 확인
+		    sudo visudo -c
+		    if [ $? -eq 0 ]; then
+		        echo "sudoers 파일이 성공적으로 업데이트되었습니다."
+		    else
+		        echo "sudoers 파일에 오류가 있습니다. 변경을 롤백합니다."
+		        # 오류가 있으면 변경사항 되돌리기
+		        sudo sed -i '$d' $SUDOERS_FILE
+		    fi
+		else
+		    echo "이미 해당 라인이 존재합니다. 추가하지 않았습니다."
+		fi
+		echo "========================================================";
 else
 	echo "mode false = $mode";
 fi
@@ -256,6 +370,9 @@ while true;do
 			pm2 start npm --name webui --cwd ~/web_robot_ui -- run start
 			pm2 start ~/slamnav2/SLAMNAV2 --cwd ~/slamnav2 --kill-timeout 3000
 			pm2 start ~/mediamtx
+			if [ "$choice" == 3 ];then
+				pm2 start ~/taskman/Taskman --cwd ~/taskman
+			fi
 			pm2 save
 			startup_command=$(pm2 startup | grep 'sudo' | tail -n 1)
 			eval $startup_command
@@ -267,8 +384,11 @@ while true;do
 			pm2 start npm --name server --cwd ~/web_robot_server -- run start:prod --kill-timeout 3000
 			pm2 start npm --name webui --cwd ~/web_robot_ui -- run start
 			pm2 start ~/slamnav2/SLAMNAV2 --cwd ~/slamnav2 --kill-timeout 3000
-			pm2 start --name browser browser.sh --restart-delay 20000
+			pm2 start --name browser ~/browser.sh --restart-delay 20000
 			pm2 start ~/mediamtx
+			if [ "$choice" == 3 ];then
+				pm2 start ~/taskman/Taskman --cwd ~/taskman
+			fi
 			pm2 save
 			startup_command=$(pm2 startup | grep 'sudo' | tail -n 1)
 			eval $startup_command

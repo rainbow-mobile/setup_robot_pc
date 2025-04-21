@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Source/Checks/Curses/CheckCurses.c
+ncurses.h
+-
+ncurses/ncurses.h
+-
+ncurses/curses.h
+-
+curses.h
+-
+

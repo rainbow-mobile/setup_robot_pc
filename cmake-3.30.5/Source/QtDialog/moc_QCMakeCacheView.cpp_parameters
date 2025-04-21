@@ -1,0 +1,8 @@
+-I/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/std
+-I/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities
+-I/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities
+-I/home/rainbow/setup_robot_pc/cmake-3.30.5/Source/QtDialog
+-I/home/rainbow/setup_robot_pc/cmake-3.30.5/Source/QtDialog
+-o
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Source/QtDialog/moc_QCMakeCacheView.cpp
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Source/QtDialog/QCMakeCacheView.h

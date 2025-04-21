@@ -1,0 +1,261 @@
+Performing Test HAVE_FSETXATTR_6 failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_d7daa/fast
+gmake  -f CMakeFiles/cmTC_d7daa.dir/build.make CMakeFiles/cmTC_d7daa.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d7daa.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_FSETXATTR_6  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_d7daa.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:356:3: error: too many arguments to function ‘fsetxattr’
+  356 |   fsetxattr(0, 0, 0, 0, 0, 0);
+      |   ^~~~~~~~~
+In file included from /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:353:
+/usr/include/x86_64-linux-gnu/sys/xattr.h:54:12: note: declared here
+   54 | extern int fsetxattr (int __fd, const char *__name, const void *__value,
+      |            ^~~~~~~~~
+gmake[1]: *** [CMakeFiles/cmTC_d7daa.dir/build.make:78: CMakeFiles/cmTC_d7daa.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_d7daa/fast] Error 2
+
+
+Performing Test HAVE_IOCTLSOCKET failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_5418b/fast
+gmake  -f CMakeFiles/cmTC_5418b.dir/build.make CMakeFiles/cmTC_5418b.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5418b.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_IOCTLSOCKET  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_5418b.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:177:45: error: ‘FIONBIO’ undeclared (first use in this function)
+  177 |   unsigned long flags = ioctlsocket(socket, FIONBIO, &flags);
+      |                                             ^~~~~~~
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:177:45: note: each undeclared identifier is reported only once for each function it appears in
+gmake[1]: *** [CMakeFiles/cmTC_5418b.dir/build.make:78: CMakeFiles/cmTC_5418b.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_5418b/fast] Error 2
+
+
+Performing Test HAVE_IOCTLSOCKET_CAMEL failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_e3aeb/fast
+gmake  -f CMakeFiles/cmTC_e3aeb.dir/build.make CMakeFiles/cmTC_e3aeb.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e3aeb.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_IOCTLSOCKET_CAMEL  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_e3aeb.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+Linking C executable cmTC_e3aeb
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E cmake_link_script CMakeFiles/cmTC_e3aeb.dir/link.txt --verbose=1
+/usr/bin/gcc  -w -DHAVE_IOCTLSOCKET_CAMEL  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H CMakeFiles/cmTC_e3aeb.dir/CurlTests.c.o -o cmTC_e3aeb
+/usr/bin/ld: CMakeFiles/cmTC_e3aeb.dir/CurlTests.c.o: in function `main':
+CurlTests.c:(.text+0x1d): undefined reference to `IoctlSocket'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_e3aeb.dir/build.make:99: cmTC_e3aeb] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_e3aeb/fast] Error 2
+
+
+Performing Test HAVE_IOCTLSOCKET_CAMEL_FIONBIO failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_b7937/fast
+gmake  -f CMakeFiles/cmTC_b7937.dir/build.make CMakeFiles/cmTC_b7937.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b7937.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_IOCTLSOCKET_CAMEL_FIONBIO  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_b7937.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:214:26: error: ‘FIONBIO’ undeclared (first use in this function)
+  214 |   if(0 != IoctlSocket(0, FIONBIO, &flags))
+      |                          ^~~~~~~
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:214:26: note: each undeclared identifier is reported only once for each function it appears in
+gmake[1]: *** [CMakeFiles/cmTC_b7937.dir/build.make:78: CMakeFiles/cmTC_b7937.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_b7937/fast] Error 2
+
+
+Performing Test HAVE_IOCTLSOCKET_FIONBIO failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_06228/fast
+gmake  -f CMakeFiles/cmTC_06228.dir/build.make CMakeFiles/cmTC_06228.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_06228.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_IOCTLSOCKET_FIONBIO  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_06228.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:232:26: error: ‘FIONBIO’ undeclared (first use in this function)
+  232 |   if(0 != ioctlsocket(0, FIONBIO, &flags))
+      |                          ^~~~~~~
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:232:26: note: each undeclared identifier is reported only once for each function it appears in
+gmake[1]: *** [CMakeFiles/cmTC_06228.dir/build.make:78: CMakeFiles/cmTC_06228.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_06228/fast] Error 2
+
+
+Performing Test HAVE_SETSOCKOPT_SO_NONBLOCK failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_06a9e/fast
+gmake  -f CMakeFiles/cmTC_06a9e.dir/build.make CMakeFiles/cmTC_06a9e.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_06a9e.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_SETSOCKOPT_SO_NONBLOCK  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_06a9e.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:314:37: error: ‘SO_NONBLOCK’ undeclared (first use in this function); did you mean ‘SOCK_NONBLOCK’?
+  314 |   if(0 != setsockopt(0, SOL_SOCKET, SO_NONBLOCK, 0, 0))
+      |                                     ^~~~~~~~~~~
+      |                                     SOCK_NONBLOCK
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:314:37: note: each undeclared identifier is reported only once for each function it appears in
+gmake[1]: *** [CMakeFiles/cmTC_06a9e.dir/build.make:78: CMakeFiles/cmTC_06a9e.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_06a9e/fast] Error 2
+
+
+Performing Test HAVE_O_NONBLOCK failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_56c4d/fast
+gmake  -f CMakeFiles/cmTC_56c4d.dir/build.make CMakeFiles/cmTC_56c4d.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_56c4d.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_O_NONBLOCK  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_56c4d.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+Linking C executable cmTC_56c4d
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E cmake_link_script CMakeFiles/cmTC_56c4d.dir/link.txt --verbose=1
+/usr/bin/gcc  -w -DHAVE_O_NONBLOCK  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H CMakeFiles/cmTC_56c4d.dir/CurlTests.c.o -o cmTC_56c4d
+/usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
+(.text+0x1b): undefined reference to `main'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_56c4d.dir/build.make:99: cmTC_56c4d] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_56c4d/fast] Error 2
+
+
+Performing Test HAVE_GETHOSTBYNAME_R_3 failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_beeca/fast
+gmake  -f CMakeFiles/cmTC_beeca.dir/build.make CMakeFiles/cmTC_beeca.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_beeca.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_GETHOSTBYNAME_R_3  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_beeca.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:80:23: error: storage size of ‘hdata’ isn’t known
+   80 |   struct hostent_data hdata;
+      |                       ^~~~~
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:92:8: error: too few arguments to function ‘gethostbyname_r’
+   92 |   rc = gethostbyname_r(address, &h, &hdata);
+      |        ^~~~~~~~~~~~~~~
+In file included from /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:70:
+/usr/include/netdb.h:177:12: note: declared here
+  177 | extern int gethostbyname_r (const char *__restrict __name,
+      |            ^~~~~~~~~~~~~~~
+gmake[1]: *** [CMakeFiles/cmTC_beeca.dir/build.make:78: CMakeFiles/cmTC_beeca.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_beeca/fast] Error 2
+
+
+Performing Test HAVE_GETHOSTBYNAME_R_5 failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_34f2e/fast
+gmake  -f CMakeFiles/cmTC_34f2e.dir/build.make CMakeFiles/cmTC_34f2e.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_34f2e.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_GETHOSTBYNAME_R_5  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_34f2e.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:95:8: error: too few arguments to function ‘gethostbyname_r’
+   95 |   rc = gethostbyname_r(address, &h, buffer, 8192, &h_errnop);
+      |        ^~~~~~~~~~~~~~~
+In file included from /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:70:
+/usr/include/netdb.h:177:12: note: declared here
+  177 | extern int gethostbyname_r (const char *__restrict __name,
+      |            ^~~~~~~~~~~~~~~
+gmake[1]: *** [CMakeFiles/cmTC_34f2e.dir/build.make:78: CMakeFiles/cmTC_34f2e.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_34f2e/fast] Error 2
+
+
+Performing Test HAVE_GETHOSTBYNAME_R_3_REENTRANT failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_62352/fast
+gmake  -f CMakeFiles/cmTC_62352.dir/build.make CMakeFiles/cmTC_62352.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_62352.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_GETHOSTBYNAME_R_3_REENTRANT  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_62352.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:80:23: error: storage size of ‘hdata’ isn’t known
+   80 |   struct hostent_data hdata;
+      |                       ^~~~~
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:92:8: error: too few arguments to function ‘gethostbyname_r’
+   92 |   rc = gethostbyname_r(address, &h, &hdata);
+      |        ^~~~~~~~~~~~~~~
+In file included from /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:70:
+/usr/include/netdb.h:177:12: note: declared here
+  177 | extern int gethostbyname_r (const char *__restrict __name,
+      |            ^~~~~~~~~~~~~~~
+gmake[1]: *** [CMakeFiles/cmTC_62352.dir/build.make:78: CMakeFiles/cmTC_62352.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_62352/fast] Error 2
+
+
+Performing Test HAVE_GETHOSTBYNAME_R_5_REENTRANT failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_edf52/fast
+gmake  -f CMakeFiles/cmTC_edf52.dir/build.make CMakeFiles/cmTC_edf52.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_edf52.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_GETHOSTBYNAME_R_5_REENTRANT  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_edf52.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:95:8: error: too few arguments to function ‘gethostbyname_r’
+   95 |   rc = gethostbyname_r(address, &h, buffer, 8192, &h_errnop);
+      |        ^~~~~~~~~~~~~~~
+In file included from /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:70:
+/usr/include/netdb.h:177:12: note: declared here
+  177 | extern int gethostbyname_r (const char *__restrict __name,
+      |            ^~~~~~~~~~~~~~~
+gmake[1]: *** [CMakeFiles/cmTC_edf52.dir/build.make:78: CMakeFiles/cmTC_edf52.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_edf52/fast] Error 2
+
+
+Performing Test HAVE_GLIBC_STRERROR_R failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_e2c00/fast
+gmake  -f CMakeFiles/cmTC_e2c00.dir/build.make CMakeFiles/cmTC_e2c00.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e2c00.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_GLIBC_STRERROR_R  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_e2c00.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:331:51: error: subscripted value is neither array nor pointer nor vector
+  331 |   check(strerror_r(EACCES, buffer, sizeof(buffer))[0]);
+      |                                                   ^
+gmake[1]: *** [CMakeFiles/cmTC_e2c00.dir/build.make:78: CMakeFiles/cmTC_e2c00.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_e2c00/fast] Error 2
+
+
+Performing Test HAVE_BUILTIN_AVAILABLE failed with the following output:
+Change Dir: '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+
+Run Build Command(s): /home/rainbow/setup_robot_pc/cmake-3.30.5/Bootstrap.cmk/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_0edb0/fast
+gmake  -f CMakeFiles/cmTC_0edb0.dir/build.make CMakeFiles/cmTC_0edb0.dir/build
+gmake[1]: Entering directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_0edb0.dir/CurlTests.c.o
+/usr/bin/gcc   -w -DHAVE_BUILTIN_AVAILABLE  -DHAVE_SYS_WAIT_H -DHAVE_SYS_IOCTL_H -DHAVE_SYS_PARAM_H -DHAVE_SYS_POLL_H -DHAVE_SYS_RESOURCE_H -DHAVE_SYS_SELECT_H -DHAVE_SYS_SOCKET_H -DHAVE_SYS_STAT_H -DHAVE_SYS_TIME_H -DHAVE_SYS_TYPES_H -DHAVE_SYS_UN_H -DHAVE_SYS_XATTR_H -DHAVE_ARPA_INET_H -DHAVE_DIRENT_H -DHAVE_FCNTL_H -DHAVE_IFADDRS_H -DHAVE_LIBGEN_H -DHAVE_LOCALE_H -DHAVE_NET_IF_H -DHAVE_NETDB_H -DHAVE_NETINET_IN_H -DHAVE_NETINET_TCP_H -DHAVE_NETINET_UDP_H -DHAVE_POLL_H -DHAVE_PWD_H -DHAVE_STDBOOL_H -DHAVE_STRINGS_H -DHAVE_TERMIO_H -DHAVE_TERMIOS_H -DHAVE_UNISTD_H -DHAVE_UTIME_H -std=gnu11 -o CMakeFiles/cmTC_0edb0.dir/CurlTests.c.o -c /home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c: In function ‘main’:
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:383:26: error: ‘macOS’ undeclared (first use in this function)
+  383 |   if(__builtin_available(macOS 10.12, *)) {}
+      |                          ^~~~~
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:383:26: note: each undeclared identifier is reported only once for each function it appears in
+/home/rainbow/setup_robot_pc/cmake-3.30.5/Utilities/cmcurl/CMake/CurlTests.c:383:31: error: expected ‘)’ before numeric constant
+  383 |   if(__builtin_available(macOS 10.12, *)) {}
+      |                         ~     ^~~~~~
+      |                               )
+gmake[1]: *** [CMakeFiles/cmTC_0edb0.dir/build.make:78: CMakeFiles/cmTC_0edb0.dir/CurlTests.c.o] Error 1
+gmake[1]: Leaving directory '/home/rainbow/setup_robot_pc/cmake-3.30.5/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_0edb0/fast] Error 2
+
+
