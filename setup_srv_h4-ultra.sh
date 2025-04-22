@@ -42,21 +42,36 @@ git clone https://github.com/yuuujinHeo/release.git release
 cd release
 echo ">> 'ultra' 브랜치로 전환 중..."
 git fetch origin
-if git show-ref --verify --quiet refs/heads/ultra; then
-    git checkout ultra
+if git show-ref --verify --quiet refs/heads/S1002SRV; then
+    git checkout S1002SRV
 else
-    git checkout -b ultra origin/ultra
+    git checkout -b S1002SRV origin/S1002SRV
 fi
 
-# 5. qml-module-qtquick-dialogs 설치 (미설치 시에만)
-PKG="qml-module-qtquick-dialogs"
-echo ">> 패키지 '$PKG' 설치 확인..."
-if ! dpkg -l | grep -qw "$PKG"; then
-    echo ">>> 설치되어 있지 않음. 설치 중..."
-    sudo apt-get update
-    sudo apt-get install -y "$PKG"
+# 5. Qt QML 모듈 설치 (미설치 시에만)
+declare -a PKGS=(
+  qml-module-qtquick-shapes
+  qml-module-qtmultimedia
+  qml-module-qt-labs-platform
+  qml-module-qtquick-controls2
+  qml-module-qtquick-dialogs
+)
+
+# 설치되지 않은 패키지 수집
+MISSING=()
+for pkg in "${PKGS[@]}"; do
+  if ! dpkg -l | grep -qw "$pkg"; then
+    MISSING+=("$pkg")
+  fi
+done
+
+# 설치
+if [ ${#MISSING[@]} -gt 0 ]; then
+  echo ">> 다음 패키지 설치 필요: ${MISSING[*]}"
+  sudo apt-get update
+  sudo apt-get install -y "${MISSING[@]}"
 else
-    echo ">>> 이미 설치되어 있음, 건너뜀"
+  echo ">> 모든 Qt QML 모듈이 이미 설치되어 있습니다."
 fi
 
 echo "=== 모든 작업 완료 ==="
