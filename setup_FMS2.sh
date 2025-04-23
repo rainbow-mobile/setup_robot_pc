@@ -8,12 +8,12 @@ sudo apt update
 PKGS=(
     qtbase5-dev
     qt5-qmake
-    #qtmultimedia5-dev
-    #libqt5-multimedia5-plugins
+    qtmultimedia5-dev
+    libqt5multimedia5-plugins
     libopencv-dev
     libopencv-contrib-dev
     libeigen3-dev
-    libboost-all-dev
+    libboost-thread-dev
     libtbb-dev
     libssl-dev
     librdkafka-dev
@@ -26,18 +26,8 @@ PKGS=(
     libgstreamer-plugins-base1.0-dev
     gstreamer1.0-rtsp
     libqt5websockets5-dev          # QT += websockets
-    libopencv-dev                  # OpenCV
-    libopencv-contrib-dev
-    libeigen3-dev                  # Eigen
-    libboost-all-dev               # Boost
-    libtbb-dev                     # TBB
-    libssl-dev                     # OpenSSL
-    librdkafka-dev                 # librdkafka (C)
-    librdkafka++-dev               # librdkafka++ (C++)
+    libboost-system-dev               # Boost
     libjsoncpp-dev                 # JSONCPP
-    libvtk9-dev                    # VTK core
-    libvtk9-qt-dev                 # VTK Qt support
-    libpcl-dev                     # PCL
     libminizip-dev                 # minizip
     zlib1g-dev                     # zlib
     #libsophus-dev                  # Sophus (if 제공되는 경우)
