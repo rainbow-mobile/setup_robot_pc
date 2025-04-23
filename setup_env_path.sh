@@ -5,6 +5,10 @@ BASHRC="$HOME/.bashrc"
 PATHS=(
   "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/slamnav2"
   "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/fms2"
+  "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/OrbbecSDK/SDK/lib"
+  "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/usr/local/lib"
+  
+
 )
 
 for line in "${PATHS[@]}"; do
