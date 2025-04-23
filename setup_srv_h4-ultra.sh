@@ -7,12 +7,22 @@ TARGET_DIR="/home/$USERNAME"
 
 echo "작업 디렉토리: $TARGET_DIR"
 
-# 1. RB_MOBILE 클론 (없으면 클론, 있으면 건너뜀)
+# 1. RB_MOBILE 클론 및 브랜치 설정 (없으면 클론, 있으면 브랜치 체크아웃)
 if [ ! -d "$TARGET_DIR/RB_MOBILE" ]; then
-    echo ">> RB_MOBILE 레포지토리 클론 중..."
-    git clone https://github.com/yuuujinHeo/RB_MOBILE.git "$TARGET_DIR/RB_MOBILE"
+    echo ">> RB_MOBILE 레포지토리 브랜치 S1002SRV로 클론 중..."
+    git clone --branch S1002SRV https://github.com/yuuujinHeo/RB_MOBILE.git "$TARGET_DIR/RB_MOBILE"
 else
-    echo ">> $TARGET_DIR/RB_MOBILE 이미 존재, 클론 건너뜀"
+    echo ">> $TARGET_DIR/RB_MOBILE 이미 존재, 브랜치 S1002SRV로 변경 중..."
+    pushd "$TARGET_DIR/RB_MOBILE" > /dev/null
+    # 원격 브랜치 최신 정보 가져오기
+    git fetch origin S1002SRV
+    # 로컬에 브랜치가 없으면 생성 후 체크아웃
+    if git show-ref --verify --quiet refs/heads/S1002SRV; then
+        git checkout S1002SRV
+    else
+        git checkout -b S1002SRV origin/S1002SRV
+    fi
+    popd > /dev/null
 fi
 
 # RB_MOBILE 디렉토리로 이동
