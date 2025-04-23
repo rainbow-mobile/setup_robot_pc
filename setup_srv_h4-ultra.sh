@@ -1,10 +1,15 @@
 #!/bin/bash
 set -e
 
-# 0. 작업 디렉토리 설정: /home/현재사용자
-USERNAME=$(whoami)
-TARGET_DIR="/home/$USERNAME"
+# 0. 실제 사용자 결정 (sudo 실행 시에도 원사용자 권한 유지)
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+  REAL_USER="$SUDO_USER"
+else
+  REAL_USER="$(id -un)"
+fi
 
+# 설치 대상 디렉토리
+TARGET_DIR="/home/$REAL_USER"
 echo "작업 디렉토리: $TARGET_DIR"
 
 # 1. RB_MOBILE 클론 및 브랜치 설정 (없으면 클론, 있으면 브랜치 체크아웃)
