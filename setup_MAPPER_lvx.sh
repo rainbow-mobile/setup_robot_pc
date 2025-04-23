@@ -31,8 +31,6 @@ APT_PKGS=(
   # Eigen · TBB · JSONCPP · USB · 압축
   libeigen3-dev libtbb-dev libjsoncpp-dev libusb-1.0-0-dev
   zlib1g-dev libbz2-dev liblzma-dev libarchive-dev
-  # GTSAM (패키지 있음 → 4.2.x)
-  libgtsam-dev
   # PDAL
   libpdal-dev
   # spdlog (depth-ai 의존)
