@@ -40,7 +40,7 @@ git clone https://github.com/yuuujinHeo/release.git release
 
 # 4. release 브랜치 ultra로 체크아웃
 cd release
-echo ">> 'ultra' 브랜치로 전환 중..."
+echo ">> 'S1002SRV' 브랜치로 전환 중..."
 git fetch origin
 if git show-ref --verify --quiet refs/heads/S1002SRV; then
     git checkout S1002SRV
