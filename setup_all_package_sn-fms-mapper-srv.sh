@@ -2,6 +2,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# 1) 원사용자 결정 (sudo로 실행해도 실제 사용자의 홈·권한으로 수행)
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+  REAL_USER="$SUDO_USER"
+else
+  REAL_USER="$(id -un)"
+fi
+
 need_root() { [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요."; exit 1; }; }
 need_root
 
