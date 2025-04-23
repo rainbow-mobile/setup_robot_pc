@@ -40,3 +40,30 @@ done
 echo
 echo "모든 의존성 설치가 완료되었습니다."
 
+# ---- fms2 레포지토리 설치 옵션 ----
+# 실제 사용자 홈 디렉토리 결정 (sudo 실행 시 원사용자 홈 사용)
+if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
+  REAL_USER="$SUDO_USER"
+else
+  REAL_USER="$(id -un)"
+fi
+
+INSTALL_DIR="/home/$REAL_USER/fms2"
+
+if [ ! -d "$INSTALL_DIR" ]; then
+  read -p "'$INSTALL_DIR' 디렉토리가 없습니다. github.com/rainbow-mobile/fms2를 클론하여 설치하시겠습니까? [Y/n]: " ans
+  ans="${ans:-Y}"
+  case "$ans" in
+    [Yy]* )
+      echo "fms2 설치를 진행합니다..."
+      sudo -u "$REAL_USER" git clone https://github.com/rainbow-mobile/fms2.git "$INSTALL_DIR"
+      echo "fms2 설치가 완료되었습니다: $INSTALL_DIR"
+      ;;
+    * )
+      echo "fms2 설치를 건너뜁니다."
+      ;;
+  esac
+else
+  echo "fms2 디렉토리가 이미 존재합니다: $INSTALL_DIR"
+fi
+
