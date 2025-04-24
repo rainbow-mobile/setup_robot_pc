@@ -558,12 +558,16 @@ run_2() { # setup_sensor2.sh
   #--------------------------------------------------------------------
   # 0. 실제 사용자 / 홈 디렉터리 결정  (sudo 로 실행해도 원사용자 홈 사용)
   #--------------------------------------------------------------------
-  if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
-      REAL_USER="$SUDO_USER"
-  else
-      REAL_USER="$(id -un)"
-  fi
+  
+  #if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
+  #    REAL_USER="$SUDO_USER"
+  #else
+  #    REAL_USER="$(id -un)"
+  #fi
+  
+  REAL_USER="${SUDO_USER-$(id -un)}"   # ← 핵심 변경
   INSTALL_BASE="/home/$REAL_USER"           # ⇒ /home/사용자
+  
   echo ">>> REAL_USER  : $REAL_USER"
   echo ">>> INSTALL_TO : $INSTALL_BASE"
 
