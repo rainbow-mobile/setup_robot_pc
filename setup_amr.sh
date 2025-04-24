@@ -667,7 +667,7 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   #echo "========================================"
   #echo "0. git clone"
   #echo "========================================"
-#
+
   ## git이 설치되지 않은 경우 자동으로 설치 (이미 설치되어 있으면 건너뜁니다)
   #echo "[Pre-setup] git 설치 중..."
   #sudo apt-get install git -y

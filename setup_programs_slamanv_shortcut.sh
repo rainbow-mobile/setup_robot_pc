@@ -77,8 +77,8 @@ if [ -n "$sourceDir" ]; then
     # 바탕화면 경로 설정 (영어 환경: ~/Desktop, 한글 환경: ~/바탕화면)
     DESKTOP_DIR="$HOME/Desktop"
     if [ ! -d "$DESKTOP_DIR" ]; then
-        if [ -d "$HOME/바탕화면" ]; then
-            DESKTOP_DIR="$HOME/바탕화면"
+        if [ -d "$HOME/Desktop" ]; then
+            DESKTOP_DIR="$HOME/Desktop"
         else
             echo "바탕화면 디렉토리를 찾을 수 없습니다. DESKTOP_DIR 변수를 확인하세요."
             FAILED+=("바탕화면 디렉토리 없음")
