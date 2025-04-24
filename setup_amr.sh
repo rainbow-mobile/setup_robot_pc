@@ -275,28 +275,20 @@ run_1() { # setup_system_build_env_s100-2.sh
 
   # 4.2 GRUB 설정 (USB 전원 관리 해제, intel_pstate 비활성화)
   run_step "GRUB 설정" \
-  "grep -q 'usbcore.autosuspend=-1' /etc/default/grub" \
-  "sudo sed -Ei \
-    '/^GRUB_CMDLINE_LINUX_DEFAULT=/{
-        s/\"//'                         # 끝쪽 따옴표 제거
-        /usbcore\.autosuspend/! s/$/ usbcore.autosuspend=-1/
-        /intel_pstate=disable/! s/$/ intel_pstate=disable/
-        s/\s+/ /g                       # 중복 공백 정리
-        s/$/\"/                        # 따옴표 복구
-     }' /etc/default/grub && sudo update-grub"
+      "grep 'usbcore.autosuspend=-1 intel_pstate=disable' /etc/default/grub &> /dev/null" \
+      "sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"$/ usbcore.autosuspend=-1 intel_pstate=disable\"/' /etc/default/grub && sudo update-grub"
 
   # 4.3 자동 업데이트 비활성화
   run_step "자동 업데이트 비활성화" \
-  "grep -q '^APT::Periodic::Update-Package-Lists ' /etc/apt/apt.conf.d/20auto-upgrades" \
-  'sudo bash -c "
-cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
-APT::Periodic::Update-Package-Lists \\"0\\";
-APT::Periodic::Download-Upgradeable-Packages \\"0\\";
-APT::Periodic::AutocleanInterval \\"0\\";
-APT::Periodic::Unattended-Upgrade \\"0\\";
-EOF
-sed -i \"s/^Prompt=.*/Prompt=never/\" /etc/update-manager/release-upgrades
-gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0
+      "grep 'APT::Periodic::Update-Package-Lists \"0\"' /etc/apt/apt.conf.d/20auto-upgrades &> /dev/null" \
+      "sudo sh -c 'cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
+  APT::Periodic::Update-Package-Lists \"0\";
+  APT::Periodic::Download-Upgradeable-Packages \"0\";
+  APT::Periodic::AutocleanInterval \"0\";
+  APT::Periodic::Unattended-Upgrade \"0\";
+  EOF
+  ' && sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades && gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
+
 "'
 
 
