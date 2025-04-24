@@ -626,39 +626,29 @@ run_4() {  # setup_env_path.sh
 run_5() { # setup_programs_slamanv_shortcut.sh
   log "[STEP 5] SLAMNAV2 / diagnosis 단축키"
 
-  #############################################################################
-  # 0. 실행 환경 준비 – 로그인 사용자·바탕화면 경로 결정
-  #############################################################################
-  # sudo로 실행된 경우 $HOME=/root → 실제 사용자 홈으로 보정
+  #-------------------------------------------------------------------------#
+  # 0. 사용자 홈·바탕화면 디렉터리 결정
+  #-------------------------------------------------------------------------#
   if [ -n "${SUDO_USER-}" ]; then
       USER_HOME="$(eval echo "~$SUDO_USER")"
   else
       USER_HOME="$HOME"
   fi
 
-  # XDG 설정→후보 경로(Desktop/바탕화면)→없으면 생성
-  if [ -f "$USER_HOME/.config/user-dirs.dirs" ]; then
-      # shellcheck disable=SC1090
-      source "$USER_HOME/.config/user-dirs.dirs"
-  fi
-  DESKTOP_DIR="${XDG_DESKTOP_DIR/#\$HOME/$USER_HOME}"
-
-  for try in "$DESKTOP_DIR" "$USER_HOME/Desktop" "$USER_HOME/바탕화면"; do
-      [ -d "$try" ] && { DESKTOP_DIR="$try"; break; }
+  # 후보: ~/Desktop → ~/바탕화면
+  for d in "$USER_HOME/Desktop" "$USER_HOME/바탕화면"; do
+      [ -d "$d" ] && { DESKTOP_DIR="$d"; break; }
   done
-  if [ -z "${DESKTOP_DIR:-}" ] || [ ! -d "$DESKTOP_DIR" ]; then
+  if [ -z "${DESKTOP_DIR:-}" ]; then
       DESKTOP_DIR="$USER_HOME/Desktop"
       echo "[INFO] $DESKTOP_DIR 폴더가 없어 새로 생성합니다."
-      mkdir -p "$DESKTOP_DIR" || {
-          echo "[ERROR] 바탕화면 디렉터리 생성 실패: $DESKTOP_DIR"
-          return
-      }
+      mkdir -p "$DESKTOP_DIR" || { echo "[ERROR] 폴더 생성 실패"; return; }
   fi
   log "바탕화면 경로: $DESKTOP_DIR"
 
-  #############################################################################
+  #-------------------------------------------------------------------------#
   # 1. diagnosis 리포지토리 (~/diagnosis)
-  #############################################################################
+  #-------------------------------------------------------------------------#
   if [ ! -d "$USER_HOME/diagnosis" ]; then
       git clone https://github.com/rainbow-mobile/diagnosis.git "$USER_HOME/diagnosis"
   else
@@ -666,45 +656,36 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   fi
   SRC_DIR="$USER_HOME/diagnosis"
 
-  #############################################################################
+  #-------------------------------------------------------------------------#
   # 2. slamnav2 리포지토리 (~/slamnav2)
-  #############################################################################
+  #-------------------------------------------------------------------------#
   if [ ! -d "$USER_HOME/slamnav2" ]; then
       git clone https://github.com/rainbow-mobile/slamnav2.git "$USER_HOME/slamnav2"
   else
       ( cd "$USER_HOME/slamnav2" && git pull )
   fi
 
-  # 원하는 브랜치 선택
+  # 브랜치 선택
   cd "$USER_HOME/slamnav2"
-  mapfile -t BRANCHES < <(git branch -r | sed 's| *origin/||' | grep -v HEAD)
-  echo "[slamnav2] 원격 브랜치:"
-  printf ' %2s) %s\n' $(seq 1 ${#BRANCHES[@]}) "${BRANCHES[@]}"
-  read -rp "체크아웃할 번호: " n
-  if [[ "$n" =~ ^[0-9]+$ ]] && (( n>=1 && n<=${#BRANCHES[@]} )); then
-      git checkout "${BRANCHES[n-1]}"
-  else
-      echo "[WARN] 잘못된 번호 – 브랜치 변경 건너뜀"
-  fi
+  mapfile -t BRS < <(git branch -r | sed 's| *origin/||' | grep -v HEAD)
+  printf '[slamnav2] 원격 브랜치:\n'; printf ' %2s) %s\n' $(seq 1 ${#BRS[@]}) "${BRS[@]}"
+  read -rp "체크아웃 번호: " n
+  [[ "$n" =~ ^[0-9]+$ && n -ge 1 && n -le ${#BRS[@]} ]] && git checkout "${BRS[n-1]}"
   cd -
 
-  #############################################################################
-  # 3. 단축키 및 쉘 스크립트 복사
-  #############################################################################
-  # 쉘 스크립트
-  install -Dm755 "$SRC_DIR/slamnav2.sh" "$USER_HOME/slamnav2.sh"
-  install -Dm755 "$SRC_DIR/diagnostic.sh" "$USER_HOME/diagnostic.sh"
-
-  # 데스크톱 아이콘
+  #-------------------------------------------------------------------------#
+  # 3. 단축키 및 실행 스크립트 복사
+  #-------------------------------------------------------------------------#
+  install -Dm755 "$SRC_DIR/slamnav2.sh"     "$USER_HOME/slamnav2.sh"
+  install -Dm755 "$SRC_DIR/diagnostic.sh"   "$USER_HOME/diagnostic.sh"
   install -Dm644 "$SRC_DIR/SLAMNAV2.desktop"   "$DESKTOP_DIR/SLAMNAV2.desktop"
   install -Dm644 "$SRC_DIR/diagnostic.desktop" "$DESKTOP_DIR/diagnostic.desktop"
-
-  # 신뢰 속성 부여 (GNOME 계열)
   gio set "$DESKTOP_DIR/SLAMNAV2.desktop"   metadata::trusted true 2>/dev/null || true
   gio set "$DESKTOP_DIR/diagnostic.desktop" metadata::trusted true 2>/dev/null || true
 
   log "단축키 설치 완료"
 }
+
 
 
 run_6() { # set_teamviewer.sh
