@@ -1,5 +1,9 @@
 #!/bin/bash
 set -euo pipefail
+
+: "${DEBUGINFOD_URLS:=}"
+export DEBUGINFOD_URLS
+
 IFS=$'\n\t'
 
 # ────────────────────────────────────────────────────────────────
@@ -500,7 +504,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
       "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/usr/local/lib\" >> /etc/profile' && \
        sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\$HOME/rplidar_sdk/output/Linux/Release\" >> /etc/profile' && \
        sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\$HOME/OrbbecSDK/lib/linux_x64\" >> /etc/profile' && \
-       source /etc/profile && \
+       safe_source /etc/profile && \
        sudo ldconfig"
 
   ########################################
