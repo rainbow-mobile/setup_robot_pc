@@ -119,8 +119,17 @@ echo "[slamnav2] slamnav2 리포지토리 작업 완료."
 # 3. 진단 단축키 복사 작업
 ########################################
 echo "========================================"
-echo "1. 진단 단축키 복사 작업"
+echo "3. 진단 단축키 복사 작업"
 echo "========================================"
+
+# ▼▼▼ ❶ 실제 사용자 HOME 결정 ---------------------------------
+# sudo 로 실행하면 $HOME=/root 이 되므로,
+# SUDO_USER 가 있으면 그 사용자의 홈 디렉터리를 가져옵니다.
+if [ -n "$SUDO_USER" ]; then
+    USER_HOME="$(eval echo "~$SUDO_USER")"
+else
+    USER_HOME="$HOME"
+fi
 
 # 소스 디렉토리 결정: 우선 $HOME/diagnosis, 없으면 /home/rainbow/diagnosis
 if [ -d "$HOME/diagnosis" ]; then
@@ -134,19 +143,37 @@ fi
 
 if [ -n "$sourceDir" ]; then
     # 바탕화면 경로 설정 (영어 환경: ~/Desktop, 한글 환경: ~/바탕화면)
-    DESKTOP_DIR="$HOME/Desktop"
-    if [ ! -d "$DESKTOP_DIR" ]; then
-        if [ -d "$HOME/Desktop" ]; then
-            DESKTOP_DIR="$HOME/Desktop"
-        else
-            echo "바탕화면 디렉토리를 찾을 수 없습니다. DESKTOP_DIR 변수를 확인하세요."
-            FAILED+=("바탕화면 디렉토리 없음")
-            exit 1
-        fi
+    #DESKTOP_DIR="$HOME/Desktop"
+    #if [ ! -d "$DESKTOP_DIR" ]; then
+    #    if [ -d "$HOME/Desktop" ]; then
+    #        DESKTOP_DIR="$HOME/Desktop"
+    #    else
+    #        echo "바탕화면 디렉토리를 찾을 수 없습니다. DESKTOP_DIR 변수를 확인하세요."
+    #        FAILED+=("바탕화면 디렉토리 없음")
+    #        exit 1
+    #    fi
+    #fi
+
+    DESKTOP_DIR="$(xdg-user-dir DESKTOP 2>/dev/null || true)"
+
+    if [ -z "$DESKTOP_DIR" ] || [ ! -d "$DESKTOP_DIR" ]; then
+        for try in "$USER_HOME/Desktop" "$USER_HOME/바탕화면"; do
+            if [ -d "$try" ]; then
+                DESKTOP_DIR="$try"
+                break
+            fi
+        done
     fi
 
-    echo "[diagnosis] 단축키 복사를 진행합니다."
+    if [ -z "$DESKTOP_DIR" ] || [ ! -d "$DESKTOP_DIR" ]; then
+        echo "바탕화면 디렉토리를 찾을 수 없습니다. DESKTOP_DIR 변수를 확인하세요."
+        FAILED+=("바탕화면 디렉토리 없음")
+        exit 1
+    fi
+    echo "[diagnosis] 바탕화면 경로: $DESKTOP_DIR"
+    
     # 1. 쉘 스크립트 복사: slamnav2.sh와 diagnostic.sh (주의: 파일명이 'diagnostic'로 되어있어야 합니다.)
+    echo "[diagnosis] 단축키 복사를 진행합니다."
     destShellDir="$HOME"
     if [ -f "$sourceDir/slamnav2.sh" ] && [ -f "$sourceDir/diagnostic.sh" ]; then
         rm -f "$destShellDir/slamnav2.sh" "$destShellDir/diagnostic.sh"
