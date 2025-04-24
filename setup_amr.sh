@@ -282,10 +282,10 @@ run_1() { # setup_system_build_env_s100-2.sh
   run_step "자동 업데이트 비활성화" \
       "grep -q 'APT::Periodic::Update-Package-Lists' /etc/apt/apt.conf.d/20auto-upgrades" \
       "sudo tee /etc/apt/apt.conf.d/20auto-upgrades >/dev/null <<'EOF'
-APT::Periodic::Update-Package-Lists \"0\";
-APT::Periodic::Download-Upgradeable-Packages \"0\";
-APT::Periodic::AutocleanInterval \"0\";
-APT::Periodic::Unattended-Upgrade \"0\";
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Download-Upgradeable-Packages "0";
+APT::Periodic::AutocleanInterval "0";
+APT::Periodic::Unattended-Upgrade "0";
 EOF
 sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
 gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
