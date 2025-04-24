@@ -28,22 +28,35 @@ print_menu() {
   echo "  a) 모두 설치"
 }
 
+########################################
+# (1) 선택 함수
+########################################
 read_selection() {
-  #local sel; read -rp "번호 입력 (예: 1,3,5 또는 a): " sel
-  #[[ $sel == a ]] && sel=$(IFS=,; echo "${!SCRIPTS[*]}" | tr ' ' ',')
-  #echo "$sel"
-  local sel nums 
-    read -rp "번호 입력 (예: 1,3,5 또는 a): " sel
-    if [[ $sel == a ]]; then
-        nums=$(printf '%s\n' "${!SCRIPTS[@]}" | tr '\n' ',') # 숫자의 순으로 키 목록을 배열에 저장
-        mapfile -t nums < <(printf '%s\n' "${!SCRIPTS[@]}" | sort -n)
+    local sel
+    read -rp "번호 입력 (예: 1,3,5 또는 a[모두]): " sel
+
+    if [[ $sel == "a" ]]; then
+        # SCRIPTS 배열의 키(숫자)만 뽑아서 정렬
+        printf "%s\n" "${!SCRIPTS[@]}" | sort -n
     else
-        IFS=',' read -r -a nums <<< "$sel" # 입력된 번호를 배열로 변환
+        # “1,3,5” → “1\n3\n5”
+        IFS=',' read -ra _nums <<< "$sel"
+        printf "%s\n" "${_nums[@]}"
     fi
-    #배열 내용을 공백으로 구분해 echo
-    echo "${nums[@]}"
-  
 }
+
+########################################
+# (2) 실행 루프
+########################################
+for num in $(read_selection); do
+    # 함수가 정의되어 있는지 확인
+    if declare -F "run_$num" >/dev/null; then
+        echo ">> [STEP $num] 실행"
+        "run_$num"
+    else
+        echo "[WARN] 정의된 단계 없음: $num"
+    fi
+done
 
 # Function wrappers for each script
 
