@@ -47,6 +47,13 @@ echo "========================================"
 echo "[Pre-setup] git 설치 중..."
 sudo apt-get install git -y
 
+
+########################################
+# 1. diagnosis 리포지토리 작업 (설치 경로: $HOME/diagnosis)
+########################################
+echo "========================================"
+echo "1. diagnosis 리포지토리 작업"
+echo "========================================"
 # 진단 리포지토리를 $HOME/diagnosis 경로에 클론합니다.
 if [ ! -d "$HOME/diagnosis" ]; then
     echo "[diagnosis] 리포지토리 클론 중..."
@@ -57,7 +64,59 @@ else
 fi
 
 ########################################
-# 1. 진단 단축키 복사 작업
+# 2. slamnav2 리포지토리 작업 (설치 경로: $HOME/slamnav2)
+########################################
+echo "========================================"
+echo "2. slamnav2 리포지토리 작업"
+echo "========================================"
+
+if [ ! -d "$HOME/slamnav2" ]; then
+    echo "[slamnav2] 리포지토리 클론 중..."
+    if git clone https://github.com/rainbow-mobile/slamnav2.git "$HOME/slamnav2"; then
+        INSTALLED+=("slamnav2 클론")
+    else
+        echo "[slamnav2] 클론 실패!"
+        FAILED+=("slamnav2 클론")
+    fi
+else
+    echo "[slamnav2] 리포지토리가 이미 존재합니다. 최신 상태로 업데이트합니다."
+    if cd "$HOME/slamnav2" && git pull; then
+        INSTALLED+=("slamnav2 업데이트")
+    else
+        echo "[slamnav2] 업데이트 실패!"
+        FAILED+=("slamnav2 업데이트")
+    fi
+    cd "$HOME"
+fi
+
+cd "$HOME/slamnav2"
+
+echo "[slamnav2] 원격 브랜치 목록:"
+remote_branches=($(git branch -r | sed 's/ *origin\///' | grep -v 'HEAD'))
+for i in "${!remote_branches[@]}"; do
+    echo "$((i+1)). ${remote_branches[i]}"
+done
+
+read -p "체크아웃할 브랜치 번호를 선택하세요: " branch_number
+if ! [[ "$branch_number" =~ ^[0-9]+$ ]] || [ "$branch_number" -lt 1 ] || [ "$branch_number" -gt "${#remote_branches[@]}" ]; then
+    echo "잘못된 번호입니다."
+    FAILED+=("slamnav2 브랜치 선택")
+else
+    selected_branch=${remote_branches[$((branch_number-1))]}
+    echo "[slamnav2] 선택된 브랜치: $selected_branch"
+    if git checkout "$selected_branch"; then
+        INSTALLED+=("slamnav2 브랜치 체크아웃 ($selected_branch)")
+    else
+        FAILED+=("slamnav2 브랜치 체크아웃 ($selected_branch)")
+    fi
+fi
+cd "$HOME"
+
+echo "[slamnav2] slamnav2 리포지토리 작업 완료."
+
+
+########################################
+# 3. 진단 단축키 복사 작업
 ########################################
 echo "========================================"
 echo "1. 진단 단축키 복사 작업"
@@ -139,56 +198,6 @@ if [ -n "$sourceDir" ]; then
     fi
 fi
 
-########################################
-# 2. slamnav2 리포지토리 작업 (설치 경로: $HOME/slamnav2)
-########################################
-echo "========================================"
-echo "2. slamnav2 리포지토리 작업"
-echo "========================================"
-
-if [ ! -d "$HOME/slamnav2" ]; then
-    echo "[slamnav2] 리포지토리 클론 중..."
-    if git clone https://github.com/rainbow-mobile/slamnav2.git "$HOME/slamnav2"; then
-        INSTALLED+=("slamnav2 클론")
-    else
-        echo "[slamnav2] 클론 실패!"
-        FAILED+=("slamnav2 클론")
-    fi
-else
-    echo "[slamnav2] 리포지토리가 이미 존재합니다. 최신 상태로 업데이트합니다."
-    if cd "$HOME/slamnav2" && git pull; then
-        INSTALLED+=("slamnav2 업데이트")
-    else
-        echo "[slamnav2] 업데이트 실패!"
-        FAILED+=("slamnav2 업데이트")
-    fi
-    cd "$HOME"
-fi
-
-cd "$HOME/slamnav2"
-
-echo "[slamnav2] 원격 브랜치 목록:"
-remote_branches=($(git branch -r | sed 's/ *origin\///' | grep -v 'HEAD'))
-for i in "${!remote_branches[@]}"; do
-    echo "$((i+1)). ${remote_branches[i]}"
-done
-
-read -p "체크아웃할 브랜치 번호를 선택하세요: " branch_number
-if ! [[ "$branch_number" =~ ^[0-9]+$ ]] || [ "$branch_number" -lt 1 ] || [ "$branch_number" -gt "${#remote_branches[@]}" ]; then
-    echo "잘못된 번호입니다."
-    FAILED+=("slamnav2 브랜치 선택")
-else
-    selected_branch=${remote_branches[$((branch_number-1))]}
-    echo "[slamnav2] 선택된 브랜치: $selected_branch"
-    if git checkout "$selected_branch"; then
-        INSTALLED+=("slamnav2 브랜치 체크아웃 ($selected_branch)")
-    else
-        FAILED+=("slamnav2 브랜치 체크아웃 ($selected_branch)")
-    fi
-fi
-cd "$HOME"
-
-echo "[slamnav2] slamnav2 리포지토리 작업 완료."
 
 ########################################
 # 최종 요약 및 오류 출력
