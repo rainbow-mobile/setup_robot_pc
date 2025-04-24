@@ -16,6 +16,16 @@ export XDG_DATA_DIRS
 need_root() { [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요."; exit 1; }; }
 log()       { echo -e "\e[32m[$(date +'%F %T')]\e[0m $*"; }
 
+
+# /etc/profile 같은 스크립트를 nounset 오류 없이 불러오기 위한 래퍼
+safe_source() {
+  set +u          # nounset 해제
+  # shellcheck disable=SC1090
+  source "$1"
+  set -u          # nounset 재활성화
+}
+
+
 sudo -v                        # 1회 권한 상승 확인
 sudo apt-get update -qq        # 전역 apt update (재호출 안 함)
 
@@ -250,7 +260,10 @@ run_1() { # setup_system_build_env_s100-2.sh
       "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\$HOME/OrbbecSDK/lib/linux_x64\" >> /etc/profile'"
 
   # 프로필 재적용 + ldconfig
-  if source /etc/profile && sudo ldconfig; then
+  
+  #(1) LD_LIBRARY_PATH 설정 직후
+  #if source /etc/profile && sudo ldconfig; then
+  if safe_source /etc/profile && sudo ldconfig; then 
       INSTALLED+=("프로필 재적용 및 ldconfig")
   else
       FAILED+=("프로필 재적용 및 ldconfig")
@@ -429,7 +442,9 @@ run_1() { # setup_system_build_env_s100-2.sh
 
   run_step "Re-apply profile" \
       "true" \
+      # (2) Re-apply profile 단계
       "source /etc/profile && sudo ldconfig && source ~/.bashrc"
+      "safe_source /etc/profile && sudo ldconfig && source ~/.bashrc"
 
   ########################################
   # 10. USB 시리얼 설정 및 dialout 그룹 추가
