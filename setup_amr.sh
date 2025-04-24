@@ -17,7 +17,11 @@ export XDG_DATA_DIRS
 ###############################################################################
 
 #--- 공통 함수 ---------------------------------------------------------------
-need_root() { [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요."; exit 1; }; }
+#need_root() { [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요."; exit 1; }; }
+need_root() 
+{
+  [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요."; exit 1; }
+}
 log()       { echo -e "\e[32m[$(date +'%F %T')]\e[0m $*"; }
 
 
@@ -30,7 +34,7 @@ safe_source() {
 }
 
 
-sudo -v                        # 1회 권한 상승 확인
+#sudo -v                        # 1회 권한 상승 확인
 sudo apt-get update -qq        # 전역 apt update (재호출 안 함)
 
 declare -A SCRIPTS
@@ -116,7 +120,10 @@ run_1() { # setup_system_build_env_s100-2.sh
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] 설치 스크립트 시작" > "$LOG_FILE"
 
   log_msg() {
-      local msg="[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+      #local msg="[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+      local now
+      now=$(date '+%Y-%m-%d %H:%M:%S')
+      local msg="[$now] $1"
       echo "$msg" | tee -a "$LOG_FILE"
   }
 
@@ -278,19 +285,16 @@ run_1() { # setup_system_build_env_s100-2.sh
       "grep 'usbcore.autosuspend=-1 intel_pstate=disable' /etc/default/grub &> /dev/null" \
       "sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"$/ usbcore.autosuspend=-1 intel_pstate=disable\"/' /etc/default/grub && sudo update-grub"
 
-  # 4.3 자동 업데이트 비활성화
   run_step "자동 업데이트 비활성화" \
-  "grep -q '^APT::Periodic::Update-Package-Lists ' /etc/apt/apt.conf.d/20auto-upgrades" \
-  'sudo bash -c "
-cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
+      "grep 'APT::Periodic::Update-Package-Lists \"0\"' /etc/apt/apt.conf.d/20auto-upgrades &> /dev/null" \
+      "sudo sh -c 'cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
 APT::Periodic::Update-Package-Lists \"0\";
 APT::Periodic::Download-Upgradeable-Packages \"0\";
 APT::Periodic::AutocleanInterval \"0\";
 APT::Periodic::Unattended-Upgrade \"0\";
 EOF
-sed -i \"s/^Prompt=.*/Prompt=never/\" /etc/update-manager/release-upgrades
-gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0
-"'
+' && sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades && \
+gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
 
   ########################################
@@ -636,19 +640,19 @@ run_3() { # install_udev_rules.sh
     
     
   # Check if user is root/running with sudo
-  if [ `whoami` != root ]; then
+  if [ "$(whoami)" != "root" ]; then
       echo Please run this script with sudo
       exit
   fi
 
-  ORIG_PATH=`pwd`
-  cd `dirname $0`
-  SCRIPT_PATH=`pwd`
-  cd $ORIG_PATH
+  ORIG_PATH=$(pwd)
+  cd "$(dirname "$0")"
+  SCRIPT_PATH=$(pwd)
+  cd "$ORIG_PATH"
 
-  if [ "`uname -s`" != "Darwin" ]; then
+  if [ "$(uname -s)" != "Darwin" ]; then
       # Install udev rules for USB device
-      cp ${SCRIPT_PATH}/99-obsensor-libusb.rules /etc/udev/rules.d/99-obsensor-libusb.rules
+      cp "${SCRIPT_PATH}/99-obsensor-libusb.rules" /etc/udev/rules.d/99-obsensor-libusb.rules
 
       # resload udev rules
       udevadm control --reload && udevadm trigger
