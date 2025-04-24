@@ -132,8 +132,8 @@ run_1() { # setup_system_build_env_s100-2.sh
   ########################################
   run_step() {
       local name="$1"
-      local check_cmd="${2:-true}"     # 인자가 없으면 기본값 true
-      local install_cmd="${3:-true}"   # 인자가 없으면 기본값 true
+      local check_cmd="${2:-true}"
+      local install_cmd="${3:-true}"
     
       log_msg ">> [$name] 진행 중..."
       if eval "$check_cmd"; then
