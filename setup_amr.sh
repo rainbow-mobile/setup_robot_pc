@@ -276,14 +276,16 @@ run_1() { # setup_system_build_env_s100-2.sh
 
   # 4.3 자동 업데이트 비활성화
   run_step "자동 업데이트 비활성화" \
-      "grep 'APT::Periodic::Update-Package-Lists \"0\"' /etc/apt/apt.conf.d/20auto-upgrades &> /dev/null" \
-      "sudo sh -c 'cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
-  APT::Periodic::Update-Package-Lists \"0\";
-  APT::Periodic::Download-Upgradeable-Packages \"0\";
-  APT::Periodic::AutocleanInterval \"0\";
-  APT::Periodic::Unattended-Upgrade \"0\";
-  EOF
-  ' && sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades && gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
+      "grep -q 'APT::Periodic::Update-Package-Lists' /etc/apt/apt.conf.d/20auto-upgrades" \
+      "sudo tee /etc/apt/apt.conf.d/20auto-upgrades >/dev/null <<'EOF'
+APT::Periodic::Update-Package-Lists \"0\";
+APT::Periodic::Download-Upgradeable-Packages \"0\";
+APT::Periodic::AutocleanInterval \"0\";
+APT::Periodic::Unattended-Upgrade \"0\";
+EOF
+sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
+
 
   ########################################
   # 5. 스왑파일 설정
@@ -436,14 +438,13 @@ run_1() { # setup_system_build_env_s100-2.sh
   log_msg "7. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트"
   log_msg "========================================"
 
+  # 9. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트
   run_step "OrbbecSDK path in /etc/profile" \
-      "grep 'OrbbecSDK/SDK/lib' /etc/profile &> /dev/null" \
+      "grep -q 'OrbbecSDK/SDK/lib' /etc/profile" \
       "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/OrbbecSDK/SDK/lib\" >> /etc/profile'"
 
   run_step "Re-apply profile" \
       "true" \
-      # (2) Re-apply profile 단계
-      "source /etc/profile && sudo ldconfig && source ~/.bashrc"
       "safe_source /etc/profile && sudo ldconfig && source ~/.bashrc"
 
   ########################################
