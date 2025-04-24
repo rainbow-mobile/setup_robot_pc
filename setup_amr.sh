@@ -289,8 +289,6 @@ run_1() { # setup_system_build_env_s100-2.sh
   EOF
   ' && sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades && gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
-"'
-
 
 
   ########################################
