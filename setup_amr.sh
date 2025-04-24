@@ -784,8 +784,16 @@ run_6() { # set_teamviewer.sh
 
 
 print_menu
-# IFS에 개행·스페이스를 둘 다 주고, 명령치환 결과를 배열에 직접 대입
-IFS=$'\n ' read -r -a SEL <<< "$(read_selection)"
-for n in "${SEL[@]}"; do
-  "run_$n"
+mapfile -t STEPS < <(read_selection)    # a → ["1" "2" …]
+
+for n in "${STEPS[@]}"; do
+  FN="run_$n"
+  if declare -f "$FN" >/dev/null; then
+    echo "=============================="
+    echo "실행: ${SCRIPTS[$n]}"
+    echo "=============================="
+    "$FN" || echo "[WARN] $FN 실패 (다음 단계로 계속)"
+  else
+    echo "[WARN] 잘못된 번호: $n"
+  fi
 done
