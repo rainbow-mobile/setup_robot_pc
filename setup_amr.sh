@@ -28,35 +28,12 @@ print_menu() {
   echo "  a) 모두 설치"
 }
 
-########################################
-# (1) 선택 함수
-########################################
 read_selection() {
-    local sel
-    read -rp "번호 입력 (예: 1,3,5 또는 a[모두]): " sel
-
-    if [[ $sel == "a" ]]; then
-        # SCRIPTS 배열의 키(숫자)만 뽑아서 정렬
-        printf "%s\n" "${!SCRIPTS[@]}" | sort -n
-    else
-        # “1,3,5” → “1\n3\n5”
-        IFS=',' read -ra _nums <<< "$sel"
-        printf "%s\n" "${_nums[@]}"
-    fi
+  #local sel; read -rp "번호 입력 (예: 1,3,5 또는 a): " sel
+  #[[ $sel == a ]] && sel=$(IFS=,; echo "${!SCRIPTS[*]}" | tr ' ' ',')
+  #echo "$sel"
+  
 }
-
-########################################
-# (2) 실행 루프
-########################################
-for num in $(read_selection); do
-    # 함수가 정의되어 있는지 확인
-    if declare -F "run_$num" >/dev/null; then
-        echo ">> [STEP $num] 실행"
-        "run_$num"
-    else
-        echo "[WARN] 정의된 단계 없음: $num"
-    fi
-done
 
 # Function wrappers for each script
 
@@ -723,12 +700,29 @@ run_5() { # setup_programs_slamanv_shortcut.sh
 run_6() { # set_teamviewer.sh
     
   need_root; log "[STEP 6] TeamViewer 설치"
+  
+  # 1) TeamViewer .deb 다운로드 및 설치
   ARCH=$(dpkg --print-architecture)            # amd64, arm64 …
   URL="https://download.teamviewer.com/download/linux/teamviewer-host_${ARCH}.deb"
   TMP_DEB="/tmp/teamviewer.deb"
   wget -qO "$TMP_DEB" "$URL"
   sudo apt-get install -y "$TMP_DEB"
   rm -f "$TMP_DEB"
+  
+  # 2) GDM3 설정 파일에 Wayland 비활성화 설정 적용
+  log "[STEP 6] GDM3 설정 파일 자동 수정: Wayland 비활성화"
+  CONF="/etc/gdm3/custom.conf"
+
+  if grep -Eq '^[[:space:]]*#?[[:space:]]*WaylandEnable=false' "$CONF"; then
+    # 주석(#) 제거
+    sudo sed -i 's/^[[:space:]]*#\?[[:space:]]*WaylandEnable=false/WaylandEnable=false/' "$CONF"
+  else
+    # 해당 라인이 없으면 [daemon] 섹션 아래에 추가
+    sudo sed -i '/^\[daemon\]/a WaylandEnable=false' "$CONF"
+  fi
+
+  log "GDM3 커스텀 설정 완료 (/etc/gdm3/custom.conf)"
+  
 }
 
 
