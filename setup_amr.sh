@@ -628,6 +628,33 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   # 진단 단축키 복사 및 slamnav2 리포지토리 클론/업데이트 후 브랜치 체크아웃 작업
   # 중간에 오류가 발생해도 계속 진행하며, 마지막에 요약하여 출력합니다.
 
+  if [ -n "${SUDO_USER-}" ]; then
+      USER_HOME="$(eval echo "~$SUDO_USER")"
+  else
+      USER_HOME="$HOME"
+  fi
+
+
+  CANDIDATES=("$DESKTOP_DIR" "$USER_HOME/Desktop" "$USER_HOME/바탕화면")
+  DESKTOP_DIR=""
+  for try in "${CANDIDATES[@]}"; do
+      [ -z "$try" ] && continue
+      if [ -d "$try" ]; then
+          DESKTOP_DIR="$try"
+          break
+      fi
+  done
+  if [ -z "$DESKTOP_DIR" ]; then
+      DESKTOP_DIR="$USER_HOME/Desktop"
+      echo "[INFO] $DESKTOP_DIR 폴더가 없어 새로 생성합니다."
+      mkdir -p "$DESKTOP_DIR" || {
+          echo "바탕화면 디렉토리를 생성할 수 없습니다: $DESKTOP_DIR"
+          FAILED+=("바탕화면 디렉토리 생성 실패")
+          return
+      }
+  fi
+  echo "[diagnosis] 바탕화면 경로: $DESKTOP_DIR"
+
   # 전역 배열 (설치 완료, 건너뛴 항목, 실패한 항목)
   INSTALLED=()
   SKIPPED=()
