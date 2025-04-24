@@ -29,9 +29,20 @@ print_menu() {
 }
 
 read_selection() {
-  local sel; read -rp "번호 입력 (예: 1,3,5 또는 a): " sel
-  [[ $sel == a ]] && sel=$(IFS=,; echo "${!SCRIPTS[*]}" | tr ' ' ',')
-  echo "$sel"
+  #local sel; read -rp "번호 입력 (예: 1,3,5 또는 a): " sel
+  #[[ $sel == a ]] && sel=$(IFS=,; echo "${!SCRIPTS[*]}" | tr ' ' ',')
+  #echo "$sel"
+  local sel nums 
+    read -rp "번호 입력 (예: 1,3,5 또는 a): " sel
+    if [[ $sel == a ]]; then
+        nums=$(printf '%s\n' "${!SCRIPTS[@]}" | tr '\n' ',') # 숫자의 순으로 키 목록을 배열에 저장
+        mapfile -t nums < <(printf '%s\n' "${!SCRIPTS[@]}" | sort -n)
+    else
+        IFS=',' read -r -a nums <<< "$sel" # 입력된 번호를 배열로 변환
+    fi
+    #배열 내용을 공백으로 구분해 echo
+    echo "${nums[@]}"
+  
 }
 
 # Function wrappers for each script
