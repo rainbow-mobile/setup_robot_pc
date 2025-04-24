@@ -689,80 +689,105 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   echo "========================================"
 
   # 소스 디렉토리 결정: 우선 $HOME/diagnosis, 없으면 /home/rainbow/diagnosis
-  if [ -d "$HOME/diagnosis" ]; then
-      sourceDir="$HOME/diagnosis"
-  elif [ -d "/home/rainbow/diagnosis" ]; then
-      sourceDir="/home/rainbow/diagnosis"
-  else
-      echo "진단 프로그램 디렉토리가 존재하지 않습니다: $HOME/diagnosis 또는 /home/rainbow/diagnosis"
-      FAILED+=("진단 프로그램 디렉토리 없음")
-  fi
+  if [ -n "$SUDO_USER" ]; then
+    USER_HOME="$(eval echo "~$SUDO_USER")"
+else
+    USER_HOME="$HOME"
+fi
 
-  if [ -n "$sourceDir" ]; then
-      # 바탕화면 경로 설정 (영어 환경: ~/Desktop, 한글 환경: ~/바탕화면)
-      DESKTOP_DIR="$HOME/Desktop"
-      if [ ! -d "$DESKTOP_DIR" ]; then
-          if [ -d "$HOME/바탕화면" ]; then
-              DESKTOP_DIR="$HOME/바탕화면"
-          else
-              echo "바탕화면 디렉토리를 찾을 수 없습니다. DESKTOP_DIR 변수를 확인하세요."
-              FAILED+=("바탕화면 디렉토리 없음")
-              exit 1
-          fi
-      fi
+# 소스 디렉토리 결정: 우선 $HOME/diagnosis, 없으면 /home/rainbow/diagnosis
+if [ -d "$HOME/diagnosis" ]; then
+    sourceDir="$HOME/diagnosis"
+elif [ -d "/home/rainbow/diagnosis" ]; then
+    sourceDir="/home/rainbow/diagnosis"
+else
+    echo "진단 프로그램 디렉토리가 존재하지 않습니다: $HOME/diagnosis 또는 /home/rainbow/diagnosis"
+    FAILED+=("진단 프로그램 디렉토리 없음")
+fi
 
-      echo "[diagnosis] 단축키 복사를 진행합니다."
-      # 1. 쉘 스크립트 복사: slamnav2.sh와 diagnostic.sh (주의: 파일명이 'diagnostic'로 되어있어야 합니다.)
-      destShellDir="$HOME"
-      if [ -f "$sourceDir/slamnav2.sh" ] && [ -f "$sourceDir/diagnostic.sh" ]; then
-          rm -f "$destShellDir/slamnav2.sh" "$destShellDir/diagnostic.sh"
-          if cp "$sourceDir/slamnav2.sh" "$destShellDir/" && cp "$sourceDir/diagnostic.sh" "$destShellDir/"; then
-              INSTALLED+=("쉘 스크립트 복사")
-          else
-              FAILED+=("쉘 스크립트 복사")
-          fi
-      else
-          echo "[diagnosis] 원본 쉘 스크립트 파일이 존재하지 않습니다: $sourceDir/slamnav2.sh 또는 $sourceDir/diagnostic.sh"
-          FAILED+=("원본 쉘 스크립트 파일 없음")
-      fi
+if [ -n "$sourceDir" ]; then
+    # 바탕화면 경로 설정 (영어 환경: ~/Desktop, 한글 환경: ~/바탕화면)
+    #DESKTOP_DIR="$HOME/Desktop"
+    #if [ ! -d "$DESKTOP_DIR" ]; then
+    #    if [ -d "$HOME/Desktop" ]; then
+    #        DESKTOP_DIR="$HOME/Desktop"
+    #    else
+    #        echo "바탕화면 디렉토리를 찾을 수 없습니다. DESKTOP_DIR 변수를 확인하세요."
+    #        FAILED+=("바탕화면 디렉토리 없음")
+    #        exit 1
+    #    fi
+    #fi
 
-      # 2. 데스크탑 단축키 복사: SLAMNAV2.desktop와 diagnostic.desktop
-      if [ -f "$sourceDir/SLAMNAV2.desktop" ] && [ -f "$sourceDir/diagnostic.desktop" ]; then
-          rm -f "$DESKTOP_DIR/SLAMNAV2.desktop" "$DESKTOP_DIR/diagnostic.desktop"
-          if cp "$sourceDir/SLAMNAV2.desktop" "$DESKTOP_DIR/" && cp "$sourceDir/diagnostic.desktop" "$DESKTOP_DIR/"; then
-              INSTALLED+=("데스크탑 단축키 복사")
-          else
-              FAILED+=("데스크탑 단축키 복사")
-          fi
-      else
-          echo "[diagnosis] 원본 데스크탑 파일이 존재하지 않습니다: $sourceDir/SLAMNAV2.desktop 또는 $sourceDir/diagnostic.desktop"
-          FAILED+=("원본 데스크탑 파일 없음")
-      fi
+    DESKTOP_DIR="$(xdg-user-dir DESKTOP 2>/dev/null || true)"
 
-      # 3. 데스크탑 파일 잠금 해제: 파일 존재 확인 후 gio set 실행
-      echo "[diagnosis] 데스크탑 단축키 잠금 해제 시도..."
-      if [ -f "$DESKTOP_DIR/SLAMNAV2.desktop" ]; then
-          if gio set "$DESKTOP_DIR/SLAMNAV2.desktop" metadata::trusted true; then
-              INSTALLED+=("SLAMNAV2.desktop 잠금 해제")
-          else
-              FAILED+=("SLAMNAV2.desktop 잠금 해제")
-          fi
-      else
-          echo "[diagnosis] $DESKTOP_DIR/SLAMNAV2.desktop 파일이 존재하지 않습니다."
-          FAILED+=("SLAMNAV2.desktop 파일 없음")
-      fi
+    if [ -z "$DESKTOP_DIR" ] || [ ! -d "$DESKTOP_DIR" ]; then
+        for try in "$USER_HOME/Desktop" "$USER_HOME/바탕화면"; do
+            if [ -d "$try" ]; then
+                DESKTOP_DIR="$try"
+                break
+            fi
+        done
+    fi
 
-      if [ -f "$DESKTOP_DIR/diagnostic.desktop" ]; then
-          if gio set "$DESKTOP_DIR/diagnostic.desktop" metadata::trusted true; then
-              INSTALLED+=("diagnostic.desktop 잠금 해제")
-          else
-              FAILED+=("diagnostic.desktop 잠금 해제")
-          fi
-      else
-          echo "[diagnosis] $DESKTOP_DIR/diagnostic.desktop 파일이 존재하지 않습니다."
-          FAILED+=("diagnostic.desktop 파일 없음")
-      fi
-  fi
+    if [ -z "$DESKTOP_DIR" ] || [ ! -d "$DESKTOP_DIR" ]; then
+        echo "바탕화면 디렉토리를 찾을 수 없습니다. DESKTOP_DIR 변수를 확인하세요."
+        FAILED+=("바탕화면 디렉토리 없음")
+        exit 1
+    fi
+    echo "[diagnosis] 바탕화면 경로: $DESKTOP_DIR"
+    
+    # 1. 쉘 스크립트 복사: slamnav2.sh와 diagnostic.sh (주의: 파일명이 'diagnostic'로 되어있어야 합니다.)
+    echo "[diagnosis] 단축키 복사를 진행합니다."
+    destShellDir="$HOME"
+    if [ -f "$sourceDir/slamnav2.sh" ] && [ -f "$sourceDir/diagnostic.sh" ]; then
+        rm -f "$destShellDir/slamnav2.sh" "$destShellDir/diagnostic.sh"
+        if cp "$sourceDir/slamnav2.sh" "$destShellDir/" && cp "$sourceDir/diagnostic.sh" "$destShellDir/"; then
+            INSTALLED+=("쉘 스크립트 복사")
+        else
+            FAILED+=("쉘 스크립트 복사")
+        fi
+    else
+        echo "[diagnosis] 원본 쉘 스크립트 파일이 존재하지 않습니다: $sourceDir/slamnav2.sh 또는 $sourceDir/diagnostic.sh"
+        FAILED+=("원본 쉘 스크립트 파일 없음")
+    fi
+
+    # 2. 데스크탑 단축키 복사: SLAMNAV2.desktop와 diagnostic.desktop
+    if [ -f "$sourceDir/SLAMNAV2.desktop" ] && [ -f "$sourceDir/diagnostic.desktop" ]; then
+        rm -f "$DESKTOP_DIR/SLAMNAV2.desktop" "$DESKTOP_DIR/diagnostic.desktop"
+        if cp "$sourceDir/SLAMNAV2.desktop" "$DESKTOP_DIR/" && cp "$sourceDir/diagnostic.desktop" "$DESKTOP_DIR/"; then
+            INSTALLED+=("데스크탑 단축키 복사")
+        else
+            FAILED+=("데스크탑 단축키 복사")
+        fi
+    else
+        echo "[diagnosis] 원본 데스크탑 파일이 존재하지 않습니다: $sourceDir/SLAMNAV2.desktop 또는 $sourceDir/diagnostic.desktop"
+        FAILED+=("원본 데스크탑 파일 없음")
+    fi
+
+    # 3. 데스크탑 파일 잠금 해제: 파일 존재 확인 후 gio set 실행
+    echo "[diagnosis] 데스크탑 단축키 잠금 해제 시도..."
+    if [ -f "$DESKTOP_DIR/SLAMNAV2.desktop" ]; then
+        if gio set "$DESKTOP_DIR/SLAMNAV2.desktop" metadata::trusted true; then
+            INSTALLED+=("SLAMNAV2.desktop 잠금 해제")
+        else
+            FAILED+=("SLAMNAV2.desktop 잠금 해제")
+        fi
+    else
+        echo "[diagnosis] $DESKTOP_DIR/SLAMNAV2.desktop 파일이 존재하지 않습니다."
+        FAILED+=("SLAMNAV2.desktop 파일 없음")
+    fi
+
+    if [ -f "$DESKTOP_DIR/diagnostic.desktop" ]; then
+        if gio set "$DESKTOP_DIR/diagnostic.desktop" metadata::trusted true; then
+            INSTALLED+=("diagnostic.desktop 잠금 해제")
+        else
+            FAILED+=("diagnostic.desktop 잠금 해제")
+        fi
+    else
+        echo "[diagnosis] $DESKTOP_DIR/diagnostic.desktop 파일이 존재하지 않습니다."
+        FAILED+=("diagnostic.desktop 파일 없음")
+    fi
+fi
 
   ########################################
   # 2. slamnav2 리포지토리 작업 (설치 경로: $HOME/slamnav2)
