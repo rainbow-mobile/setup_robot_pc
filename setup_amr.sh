@@ -543,7 +543,8 @@ run_2() { # setup_sensor2.sh
 
     log "[STEP 2] 센서 SDK / 드라이버 설치"
   # - 이미 디렉터리가 있으면 건너뜀
-  set -e
+  #set -e # 실패하면 즉시 종료?
+  set +e                        # ← 실패 시 즉시 종료 방지
   ###############################################################################
   # install_all.sh
   # - rplidar_sdk, OrbbecSDK, sick_safetyscanners_base 설치
@@ -624,6 +625,7 @@ run_2() { # setup_sensor2.sh
   fi
 
   log "=== ALL INSTALLATION STEPS COMPLETE ==="
+  set -e                        # ← 필요하면 마지막에 복구
 }
 
 run_3() { # install_udev_rules.sh
@@ -784,13 +786,14 @@ run_6() { # set_teamviewer.sh
 print_menu
 IFS=',' read -ra SEL <<< "$(read_selection)"
 for n in "${SEL[@]}"; do
-  FN="run_$n"
-  if declare -f "$FN" >/dev/null; then
-    echo "=============================="
-    echo "실행: ${SCRIPTS[$n]}"
-    echo "=============================="
-    "$FN"
-  else
-    echo "잘못된 번호: $n"
-  fi
+  #FN="run_$n"
+  #if declare -f "$FN" >/dev/null; then
+  #  echo "=============================="
+  #  echo "실행: ${SCRIPTS[$n]}"
+  #  echo "=============================="
+  #  "$FN"
+  #else
+  #  echo "잘못된 번호: $n"
+  #fi
+  "run_$n"             # 실패하더라도 다음 단계로 넘어가게 하려면 || true 추가
 done
