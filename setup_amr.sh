@@ -668,9 +668,17 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   # 브랜치 선택
   cd "$USER_HOME/slamnav2"
   mapfile -t BRS < <(git branch -r | sed 's| *origin/||' | grep -v HEAD)
-  printf '[slamnav2] 원격 브랜치:\n'; printf ' %2s) %s\n' $(seq 1 ${#BRS[@]}) "${BRS[@]}"
-  read -rp "체크아웃 번호: " n
-  [[ "$n" =~ ^[0-9]+$ && n -ge 1 && n -le ${#BRS[@]} ]] && git checkout "${BRS[n-1]}"
+  log "[slamnav2] 원격 브랜치 목록:"
+  for i in "${!BRS[@]}"; do
+      idx=$((i+1))
+      printf ' %2d) %s\n' "$idx" "${BRS[i]}"
+  done
+  read -rp "체크아웃할 번호: " n
+  if [[ "$n" =~ ^[0-9]+$ ]] && (( n>=1 && n<=${#BRS[@]} )); then
+      git checkout "${BRS[n-1]}"
+  else
+      echo "[WARN] 잘못된 번호, 브랜치 변경을 건너뜁니다."
+  fi
   cd -
 
   #-------------------------------------------------------------------------#
