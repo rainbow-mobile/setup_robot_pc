@@ -1,5 +1,5 @@
 #!/bin/bash
-#setup_amr2.sh
+# setup_amr.sh
 set -euo pipefail
 
 : "${DEBUGINFOD_URLS:=}"
@@ -18,7 +18,11 @@ export XDG_DATA_DIRS
 ###############################################################################
 
 #--- 공통 함수 ---------------------------------------------------------------
-need_root() { [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요."; exit 1; }; }
+#need_root() { [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요."; exit 1; }; }
+need_root() 
+{
+  [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요."; exit 1; }
+}
 log()       { echo -e "\e[32m[$(date +'%F %T')]\e[0m $*"; }
 
 
@@ -31,12 +35,8 @@ safe_source() {
 }
 
 
-sudo -v                        # 1회 권한 상승 확인
+#sudo -v                        # 1회 권한 상승 확인
 sudo apt-get update -qq        # 전역 apt update (재호출 안 함)
-
-###############################################################################
-# 스크립트 목록
-###############################################################################
 
 declare -A SCRIPTS
 SCRIPTS[1]="SLAMNAV2 Env        / setup_system_build_env_s100-2.sh"
@@ -102,17 +102,6 @@ run_1() { # setup_system_build_env_s100-2.sh
 
   sudo -v
 
-  ########################################
-  # 0. nohup 백그라운드 실행 여부 확인
-  ########################################
-  #if [ "${NOHUP_EXECUTED}" != "true" ]; then
-  #    echo "스크립트를 백그라운드에서 안전하게 실행합니다..."
-  #    export NOHUP_EXECUTED=true
-  #    nohup bash "$0" > setup_log.txt 2>&1 &
-  #    echo "설치가 백그라운드에서 진행됩니다."
-  #    echo "로그 확인: tail -f setup_log.txt"
-  #    exit 0
-  #fi
 
   ########################################
   # 1. 로그 설정 및 로깅 함수
@@ -121,12 +110,17 @@ run_1() { # setup_system_build_env_s100-2.sh
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] 설치 스크립트 시작" > "$LOG_FILE"
 
   log_msg() {
-      local msg="[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+      #local msg="[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+      local now
+      now=$(date '+%Y-%m-%d %H:%M:%S')
+      local msg="[$now] $1"
       echo "$msg" | tee -a "$LOG_FILE"
   }
 
   # 결과 추적용 배열
-  declare -a INSTALLED=() SKIPPED=() FAILED=()
+  #declare -a INSTALLED=() SKIPPED=() FAILED=()
+  INSTALLED=(); SKIPPED=(); FAILED=()
+
 
   # 실행 시간 측정
   start_time=$(date +%s)
@@ -282,17 +276,16 @@ run_1() { # setup_system_build_env_s100-2.sh
   run_step "GRUB 설정" \
       "grep 'usbcore.autosuspend=-1 intel_pstate=disable' /etc/default/grub &> /dev/null" \
       "sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"$/ usbcore.autosuspend=-1 intel_pstate=disable\"/' /etc/default/grub && sudo update-grub"
-
   # 4.3 자동 업데이트 비활성화
   run_step "자동 업데이트 비활성화" \
-      "grep -q 'APT::Periodic::Update-Package-Lists' /etc/apt/apt.conf.d/20auto-upgrades" \
-      "sudo tee /etc/apt/apt.conf.d/20auto-upgrades >/dev/null <<'EOF'
+      "grep 'APT::Periodic::Update-Package-Lists \"0\"' /etc/apt/apt.conf.d/20auto-upgrades &> /dev/null" \
+      "sudo sh -c 'cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
 APT::Periodic::Update-Package-Lists \"0\";
 APT::Periodic::Download-Upgradeable-Packages \"0\";
 APT::Periodic::AutocleanInterval \"0\";
 APT::Periodic::Unattended-Upgrade \"0\";
 EOF
-sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+' && sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades && \
 gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
 
@@ -423,25 +416,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
        cd ~"
 
   ########################################
-  # (선택) Node.js 및 Mobile/Task/Web 환경 설치 - 제외
-  ########################################
-
-  ########################################
-  # 8. TeamViewer 리셋 (또는 설치+리셋)
-  ########################################
-  #log_msg "========================================"
-  #log_msg "6. TeamViewer 리셋"
-  #log_msg "========================================"
-
-  #run_step "TeamViewer 리셋" \
-  #    "test ! -f /etc/teamviewer/global.conf" \
-  #    "sudo teamviewer --daemon stop && \
-  #     sudo rm -f /etc/teamviewer/global.conf && \
-  #     sudo rm -rf ~/.config/teamviewer/ && \
-  #     sudo teamviewer --daemon start"
-
-  ########################################
-  # 9. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트
+  # 8. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트
   ########################################
   log_msg "========================================"
   log_msg "7. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트"
@@ -457,7 +432,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
       "safe_source /etc/profile && sudo ldconfig && source ~/.bashrc"
 
   ########################################
-  # 10. USB 시리얼 설정 및 dialout 그룹 추가
+  # 9. USB 시리얼 설정 및 dialout 그룹 추가
   ########################################
   log_msg "========================================"
   log_msg "8. USB 시리얼 설정 및 dialout 그룹"
@@ -474,7 +449,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
       "sudo apt remove -y brltty"
 
   ########################################
-  # 11. USB udev 규칙 설정
+  # 10. USB udev 규칙 설정
   ########################################
   log_msg "========================================"
   log_msg "9. USB udev 규칙 설정"
@@ -489,16 +464,10 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   EOF
   ' && sudo udevadm control --reload-rules && sudo udevadm trigger"
 
-  ########################################
-  # 화면 blank(절전) 옵션 비활성화 - 제외
-  ########################################
+  
 
   ########################################
-  # 자동 로그인 설정(GDM3) - 제외
-  ########################################
-
-  ########################################
-  # 12. (선택) 추가 환경 설정
+  # 11. (선택) 추가 환경 설정
   ########################################
   log_msg "========================================"
   log_msg "10. 추가 환경 설정"
@@ -513,7 +482,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
        sudo ldconfig"
 
   ########################################
-  # 13. 최종 요약 및 재부팅 안내
+  # 12. 최종 요약 및 재부팅 안내
   ########################################
   echo "========================================"
   echo "설치 요약"
@@ -546,7 +515,8 @@ run_2() { # setup_sensor2.sh
 
     log "[STEP 2] 센서 SDK / 드라이버 설치"
   # - 이미 디렉터리가 있으면 건너뜀
-  set -e
+  #set -e # 실패하면 즉시 종료?
+  #set +e                        # ← 실패 시 즉시 종료 방지
   ###############################################################################
   # install_all.sh
   # - rplidar_sdk, OrbbecSDK, sick_safetyscanners_base 설치
@@ -560,12 +530,11 @@ run_2() { # setup_sensor2.sh
   #--------------------------------------------------------------------
   # 0. 실제 사용자 / 홈 디렉터리 결정  (sudo 로 실행해도 원사용자 홈 사용)
   #--------------------------------------------------------------------
-  if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
-      REAL_USER="$SUDO_USER"
-  else
-      REAL_USER="$(id -un)"
-  fi
+  
+  
+  REAL_USER="${SUDO_USER-$(id -un)}"   # ← 핵심 변경
   INSTALL_BASE="/home/$REAL_USER"           # ⇒ /home/사용자
+  
   echo ">>> REAL_USER  : $REAL_USER"
   echo ">>> INSTALL_TO : $INSTALL_BASE"
 
@@ -627,25 +596,26 @@ run_2() { # setup_sensor2.sh
   fi
 
   log "=== ALL INSTALLATION STEPS COMPLETE ==="
+  #set -e                        # ← 필요하면 마지막에 복구
 }
 
 run_3() { # install_udev_rules.sh
     
     
   # Check if user is root/running with sudo
-  if [ `whoami` != root ]; then
+  if [ "$(whoami)" != "root" ]; then
       echo Please run this script with sudo
       exit
   fi
 
-  ORIG_PATH=`pwd`
-  cd `dirname $0`
-  SCRIPT_PATH=`pwd`
-  cd $ORIG_PATH
+  ORIG_PATH=$(pwd)
+  cd "$(dirname "$0")"
+  SCRIPT_PATH=$(pwd)
+  cd "$ORIG_PATH"
 
-  if [ "`uname -s`" != "Darwin" ]; then
+  if [ "$(uname -s)" != "Darwin" ]; then
       # Install udev rules for USB device
-      cp ${SCRIPT_PATH}/99-obsensor-libusb.rules /etc/udev/rules.d/99-obsensor-libusb.rules
+      cp "${SCRIPT_PATH}/99-obsensor-libusb.rules" /etc/udev/rules.d/99-obsensor-libusb.rules
 
       # resload udev rules
       udevadm control --reload && udevadm trigger
@@ -785,18 +755,30 @@ run_6() { # set_teamviewer.sh
 
 
 print_menu
-echo    # 빈 줄
+mapfile -t STEPS < <(read_selection)    # a → ["1" "2" …]
 
-mapfile -t SELECTION < <(read_selection)
-
-for n in "${SELECTION[@]}"; do
+for n in "${STEPS[@]}"; do
   FN="run_$n"
-  if declare -F "$FN" >/dev/null; then
+  if declare -f "$FN" >/dev/null; then
     echo "=============================="
     echo "실행: ${SCRIPTS[$n]}"
     echo "=============================="
-    "$FN"
+    "$FN" || echo "[WARN] $FN 실패 (다음 단계로 계속)"
   else
-    echo "[경고] 정의되지 않은 단계: $n"
+    echo "[WARN] 잘못된 번호: $n"
   fi
 done
+
+# ─────────────────────────────────────────────────────
+## 소유권 · 최종 요약
+# ─────────────────────────────────────────────────────
+log "소유권(root → $REAL_USER) 확인 중…"
+chown -R "$REAL_USER:$REAL_USER" \
+  "$HOME_DIR"/{rplidar_sdk,OrbbecSDK,sick_safetyscanners_base,slamnav2,diagnosis} 2>/dev/null || true
+
+echo -e "\n========= 설치 요약 ========="
+echo "✅ 완료:";   for i in "${INSTALLED[@]}"; do echo "  - $i"; done
+echo "⏭️  건너뜀:"; for i in "${SKIPPED[@]}";   do echo "  - $i"; done
+echo "❌ 실패:";   for i in "${FAILED[@]}";    do echo "  - $i"; done
+echo "=============================="
+log "설치 완료!  새 터미널에서 LD_LIBRARY_PATH 적용을 확인하세요."
