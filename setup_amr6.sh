@@ -134,11 +134,11 @@ run_2() {
             sudo bash \"$HOME_DIR/OrbbecSDK/misc/scripts/install_udev_rules.sh\""
 
   # SICK Safety-Scanner SDK ---------------------------------------
-  run_step \"sick_safetyscanners_base\" \"[ -d \\\"$HOME_DIR/sick_safetyscanners_base\\\" ]\" \\
-           \"as_user git clone https://github.com/SICKAG/sick_safetyscanners_base.git \\\"$HOME_DIR/sick_safetyscanners_base\\\" && \\
-            as_user cmake -S \\\"$HOME_DIR/sick_safetyscanners_base\\\" -B \\\"$HOME_DIR/sick_safetyscanners_base/build\\\" -DCMAKE_BUILD_TYPE=Release && \\
-            as_user make -C \\\"$HOME_DIR/sick_safetyscanners_base/build\\\" -j\$(nproc) && \\
-            sudo make -C \\\"$HOME_DIR/sick_safetyscanners_base/build\\\" install\"
+  run_step "sick_safetyscanners_base" "[ -d \"$HOME_DIR/sick_safetyscanners_base\" ]" \
+           "as_user git clone https://github.com/SICKAG/sick_safetyscanners_base.git \"$HOME_DIR/sick_safetyscanners_base\" && \
+            as_user cmake -S \"$HOME_DIR/sick_safetyscanners_base\" -B \"$HOME_DIR/sick_safetyscanners_base/build\" -DCMAKE_BUILD_TYPE=Release && \
+            as_user make -C \"$HOME_DIR/sick_safetyscanners_base/build\" -j$(nproc) && \
+            sudo make -C \"$HOME_DIR/sick_safetyscanners_base/build\" install"
 }
 
 # ─────────────────────────────────────────────────────
@@ -154,9 +154,10 @@ run_3() {
 ## 2-4. STEP-4  ~/.bashrc
 # ─────────────────────────────────────────────────────
 run_4() {
-  run_step "bashrc LD_LIBRARY_PATH" "grep -q robot_env.sh \"$HOME_DIR/.bashrc\" || false" \
-           "as_user bash -c 'echo source /etc/profile.d/robot_env.sh >> \"$HOME_DIR/.bashrc\"'"
+  run_step "bashrc LD_LIBRARY_PATH" "grep -q robot_env.sh \"$HOME_DIR/.bashrc\"" \
+           "as_user bash -c 'grep -qxF \"source /etc/profile.d/robot_env.sh\" \"$HOME_DIR/.bashrc\" || echo \"source /etc/profile.d/robot_env.sh\" >> \"$HOME_DIR/.bashrc\"'"
 }
+
 
 # ─────────────────────────────────────────────────────
 ## 2-5. STEP-5  바탕화면 단축키
