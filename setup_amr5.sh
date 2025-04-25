@@ -110,7 +110,23 @@ run_1() {
 export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/usr/local/lib:$HOME_DIR/rplidar_sdk/output/Linux/Release:$HOME_DIR/OrbbecSDK/lib/linux_x64
 EOF
   chmod 644 /etc/profile.d/robot_env.sh
+  
+# GRUB, 자동 업데이트, 스왑
+  grep -q usbcore.autosuspend /etc/default/grub ||
+    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"$/ usbcore.autosuspend=-1 intel_pstate=disable"/' /etc/default/grub
+  update-grub
 
+  cat >/etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Download-Upgradeable-Packages "0";
+APT::Periodic::AutocleanInterval "0";
+APT::Periodic::Unattended-Upgrade "0";
+EOF
+
+  swapoff -a || true
+  fallocate -l 32G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=32768
+  chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+  grep -q '/swapfile' /etc/fstab || echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
   log "[STEP-1] 완료"
 }
 
