@@ -212,12 +212,29 @@ run_5() {
 ## 2-6. STEP-6  TeamViewer
 # ─────────────────────────────────────────────────────
 run_6() {
-  need_root; log \"[STEP-6] TeamViewer\"
-  ARCH=$(dpkg --print-architecture); TMP=/tmp/teamviewer.deb
-  run_step \"TeamViewer 설치\" \"dpkg -l | grep -q teamviewer-host\" \
-           \"wget -qO \\\"$TMP\\\" \\\"https://download.teamviewer.com/download/linux/teamviewer-host_${ARCH}.deb\\\" && \
-            apt-get install -y \\\"$TMP\\\" && rm -f \\\"$TMP\\\" && \
-            sed -i 's/^#WaylandEnable=.*/WaylandEnable=false/' /etc/gdm3/custom.conf\"
+  nneed_root; log "[STEP 6] TeamViewer 설치"
+  
+  # 1) TeamViewer .deb 다운로드 및 설치
+  ARCH=$(dpkg --print-architecture)            # amd64, arm64 …
+  URL="https://download.teamviewer.com/download/linux/teamviewer-host_${ARCH}.deb"
+  TMP_DEB="/tmp/teamviewer.deb"
+  wget -qO "$TMP_DEB" "$URL"
+  sudo apt-get install -y "$TMP_DEB"
+  rm -f "$TMP_DEB"
+  
+  # 2) GDM3 설정 파일에 Wayland 비활성화 설정 적용
+  log "[STEP 6] GDM3 설정 파일 자동 수정: Wayland 비활성화"
+  CONF="/etc/gdm3/custom.conf"
+
+  if grep -Eq '^[[:space:]]*#?[[:space:]]*WaylandEnable=false' "$CONF"; then
+    # 주석(#) 제거
+    sudo sed -i 's/^[[:space:]]*#\?[[:space:]]*WaylandEnable=false/WaylandEnable=false/' "$CONF"
+  else
+    # 해당 라인이 없으면 [daemon] 섹션 아래에 추가
+    sudo sed -i '/^\[daemon\]/a WaylandEnable=false' "$CONF"
+  fi
+
+  log "GDM3 커스텀 설정 완료 (/etc/gdm3/custom.conf)"
 }
 
 # ─────────────────────────────────────────────────────
