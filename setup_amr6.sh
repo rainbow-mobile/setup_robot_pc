@@ -241,12 +241,13 @@ run_6() {
 ## 3. 실행 루프
 # ─────────────────────────────────────────────────────
 print_menu; mapfile -t STEPS < <(read_selection)
-for n in \"${STEPS[@]}\"; do
-  FN=\"run_$n\"
-  echo -e \"\\n==============================\"
-  echo   \"실행: ${SCRIPTS[$n]}\"
-  echo   \"==============================\"
-  if declare -f \"$FN\" >/dev/null; then \"$FN\"; else echo \"[WARN] 잘못된 번호: $n\"; fi
+
+for n in "${STEPS[@]}"; do
+  FN="run_$n"
+  echo -e "\n=============================="
+  echo   "실행: ${SCRIPTS[$n]}"
+  echo   "=============================="
+  if declare -f "$FN" >/dev/null; then "$FN"; else echo "[WARN] 잘못된 번호: $n"; fi
 done
 
 # ─────────────────────────────────────────────────────
