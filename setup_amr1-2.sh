@@ -649,10 +649,15 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   #fi
   #SRC_DIR="$USER_HOME/diagnosis"
   if [ ! -d "$USER_HOME/diagnosis" ]; then
+    #as_user "git clone https://github.com/rainbow-mobile/diagnosis.git \"$USER_HOME/diagnosis\""
     as_user "git clone https://github.com/rainbow-mobile/diagnosis.git \"$USER_HOME/diagnosis\""
   else
-    as_user "(cd \"$USER_HOME/diagnosis\" && git pull)"
+    #as_user "(cd \"$USER_HOME/diagnosis\" && git pull)"
+    as_user "git -C \"$USER_HOME/diagnosis\" pull"
   fi  
+
+  SRC_DIR="$USER_HOME/diagnosis"
+
 
   #-------------------------------------------------------------------------#
   # 2. slamnav2 리포지토리 (~/slamnav2)
@@ -699,18 +704,29 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   #gio set "$DESKTOP_DIR/SLAMNAV2.desktop"   metadata::trusted true 2>/dev/null || true
   #gio set "$DESKTOP_DIR/diagnostic.desktop" metadata::trusted true 2>/dev/null || true
 
-  
+# ① .desktop 파일은 755 로, 복사 단계에서 바로 실행권한 부여
   install -Dm755 -o "$REAL_USER" -g "$REAL_USER" "$SRC_DIR/slamnav2.sh"     "$USER_HOME/slamnav2.sh"
   install -Dm755 -o "$REAL_USER" -g "$REAL_USER" "$SRC_DIR/diagnostic.sh"   "$USER_HOME/diagnostic.sh"
-  install -Dm644 -o "$REAL_USER" -g "$REAL_USER" "$SRC_DIR/SLAMNAV2.desktop"   "$DESKTOP_DIR/SLAMNAV2.desktop"
-  install -Dm644 -o "$REAL_USER" -g "$REAL_USER" "$SRC_DIR/diagnostic.desktop" "$DESKTOP_DIR/diagnostic.desktop"
+  install -Dm755 -o "$REAL_USER" -g "$REAL_USER" "$SRC_DIR/SLAMNAV2.desktop"  "$DESKTOP_DIR/SLAMNAV2.desktop"
+  install -Dm755 -o "$REAL_USER" -g "$REAL_USER" "$SRC_DIR/diagnostic.desktop" "$DESKTOP_DIR/diagnostic.desktop"
 
+  
+  
   chown -R "$REAL_USER:$REAL_USER" \
     "$USER_HOME"/{rplidar_sdk,OrbbecSDK,sick_safetyscanners_base,slamnav2,diagnosis} \
     "$DESKTOP_DIR"/{SLAMNAV2.desktop,diagnostic.desktop} \
     "$USER_HOME"/{slamnav2.sh,diagnostic.sh} 2>/dev/null || true
 
+  # 2) .desktop 신뢰 플래그 ▶ 실제 사용자 세션 DBus로 실행
+  REAL_UID=$(id -u "$REAL_USER")
+  DBUS_ADDR="unix:path=/run/user/${REAL_UID}/bus"
+  RUN_DIR="/run/user/${REAL_UID}"
   
+  as_user "DBUS_SESSION_BUS_ADDRESS='${DBUS_ADDR}' XDG_RUNTIME_DIR='${RUN_DIR}' \
+           gio set '${DESKTOP_DIR}/SLAMNAV2.desktop'  metadata::trusted true"
+  as_user "DBUS_SESSION_BUS_ADDRESS='${DBUS_ADDR}' XDG_RUNTIME_DIR='${RUN_DIR}' \
+           gio set '${DESKTOP_DIR}/diagnostic.desktop' metadata::trusted true"
+
   
   log "단축키 설치 완료"
 }
