@@ -87,15 +87,15 @@ read_selection() {
 ########################################
 # (2) 실행 루프
 ########################################
-for num in $(read_selection); do
-    # 함수가 정의되어 있는지 확인
-    if declare -F "run_$num" >/dev/null; then
-        echo ">> [STEP $num] 실행"
-        "run_$num"
-    else
-        echo "[WARN] 정의된 단계 없음: $num"
-    fi
-done
+#for num in $(read_selection); do
+#    # 함수가 정의되어 있는지 확인
+#    if declare -F "run_$num" >/dev/null; then
+#        echo ">> [STEP $num] 실행"
+#        "run_$num"
+#    else
+#        echo "[WARN] 정의된 단계 없음: $num"
+#    fi
+#done
 # Function wrappers for each script
 
 run_1() { # setup_system_build_env_s100-2.sh
