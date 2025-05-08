@@ -766,7 +766,8 @@ print_menu
 mapfile -t STEPS < <(read_selection)
 
 for n in "${STEPS[@]}"; do
-  FN="${SCRIPTS[$n]##*/}"
+  # 슬래시 뒤 문자열을 잘라서 앞뒤 공백을 xargs 로 제거
+  FN=$(echo "${SCRIPTS[$n]##*/}" | xargs)
   if declare -f "$FN" >/dev/null; then
     echo -e "\n=============================="
     echo "실행: ${SCRIPTS[$n]%%/*}"
