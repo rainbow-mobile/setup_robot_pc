@@ -30,7 +30,12 @@ need_root() { [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요." >&2; exit 
 log()       { echo -e "\e[32m[$(date +'%F %T')]\e[0m $*"; }
 
 need_root
-
+fix_hash_mismatch                  # ←★ 이 한 줄만 추가해도 충분
+apt-get update -qq || {            # 첫 update 시도
+  echo "[WARN] update 실패, 캐시 재정비 후 재시도";   # 실패하면
+  fix_hash_mismatch
+  apt-get update -qq
+}
 REAL_USER=${SUDO_USER:-$(logname)}
 [[ $REAL_USER == root ]] && {
   echo "❗ 반드시 일반 사용자에서:  sudo ./setup_amr.sh  형태로 실행하세요."
