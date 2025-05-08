@@ -10,17 +10,18 @@ IFS=$'\n\t'
 ## 🆕 APT Hash-Sum mismatch 자동 복구 함수
 ###############################################################################
 fix_hash_mismatch() {
-  echo -e "\e[34m[APT] Hash-Sum mismatch 대비: 캐시 초기화\e[0m"
-  rm -rf /var/lib/apt/lists/*
-  mkdir -p /var/lib/apt/lists/partial
-  apt-get clean
+  echo -e "\e[34m[APT] Hash-Sum mismatch 복구: 캐시 초기화\e[0m"
 
-  # i386 아키텍처 제거(선택)
+  # 0) 인덱스·캐시 전부 삭제
+  rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/partial/*
+  mkdir -p /var/lib/apt/lists/partial
+
+  # 1) i386 아키텍처 제거(필요 없을 때)
   dpkg --remove-architecture i386 2>/dev/null || true
 
-  # kr.archive → archive 로 일괄 치환(안정 미러)
-  sed -i 's|http://kr.archive.ubuntu.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' \
-        /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
+  # 2) 미러 교체: kr.archive + security → archive.ubuntu.com
+  sed -Ei 's|http://(kr\.archive|security)\.ubuntu\.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' \
+          /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
 }
 
 #──────────────────────────────────────────────────────────────────────────────
@@ -31,10 +32,16 @@ log()       { echo -e "\e[32m[$(date +'%F %T')]\e[0m $*"; }
 
 need_root
 fix_hash_mismatch                  # ←★ 이 한 줄만 추가해도 충분
-apt-get update -qq || {            # 첫 update 시도
-  echo "[WARN] update 실패, 캐시 재정비 후 재시도";   # 실패하면
+# 첫 update 시도
+apt-get update -o Acquire::CompressionTypes::Order::=gz \
+               -o Acquire::http::No-Cache=true \
+               -o Acquire::https::No-Cache=true \
+               || {
+  echo "[WARN] update 실패, 캐시 재정비 후 재시도"
   fix_hash_mismatch
-  apt-get update -qq
+  apt-get update -o Acquire::CompressionTypes::Order::=gz \
+                 -o Acquire::http::No-Cache=true \
+                 -o Acquire::https::No-Cache=true
 }
 REAL_USER=${SUDO_USER:-$(logname)}
 [[ $REAL_USER == root ]] && {
