@@ -30,6 +30,16 @@ fix_hash_mismatch() {
 need_root() { [[ $EUID -eq 0 ]] || { echo "sudo 로 실행하세요." >&2; exit 1; }; }
 log()       { echo -e "\e[32m[$(date +'%F %T')]\e[0m $*"; }
 
+###############################################################################
+# profile 재읽기 helper – set -u 상태에서도 안전
+###############################################################################
+safe_source() {
+  set +u
+  # shellcheck disable=SC1090
+  source "$1"
+  set -u
+}
+
 need_root
 fix_hash_mismatch                  # ←★ 이 한 줄만 추가해도 충분
 # 첫 update 시도
@@ -67,7 +77,20 @@ MODE_SEL=${MODE_SEL:-f}
 [[ $MODE_SEL =~ ^[FfLl]$ ]] || { echo "잘못된 입력"; exit 1; }
 MODE=$([[ $MODE_SEL =~ ^[Ll]$ ]] && echo "LIGHT" || echo "FULL")
 log "▶ 설치 모드: $MODE"
-
+###############################################################################
+# (Light 전용) Qt 런타임 최소 패키지 – xcb platform-plugin 포함
+###############################################################################
+if [[ $MODE == "LIGHT" ]]; then
+  QT_RUNTIME_PKGS=(
+    libqt5gui5 libqt5core5a libqt5widgets5 libqt5network5
+    libqt5qml5 libqt5quick5 qtwayland5
+    libxcb-xinerama0 libxcb-icccm4 libxcb-image0
+    libxcb-keysyms1  libxcb-render-util0
+  )
+  log "[Light] Qt 런타임 최소 패키지 설치"
+  apt-get update -qq
+  apt-get install -y --no-install-recommends "${QT_RUNTIME_PKGS[@]}"
+fi
 #──────────────────────────────────────────────────────────────────────────────
 ## 2. 스크립트 번호·설명 매핑
 #──────────────────────────────────────────────────────────────────────────────
@@ -605,8 +628,8 @@ run_4() {  # setup_env_path.sh
   #BASHRC="$HOME/.bashrc"
   BASHRC="$USER_HOME/.bashrc"
   PATHS=(
-    "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/slamnav2"
-    "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/fms2"
+    "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:${USER_HOME}/slamnav2"
+    "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:${USER_HOME}/fms2"
   )
 
   for line in "${PATHS[@]}"; do
