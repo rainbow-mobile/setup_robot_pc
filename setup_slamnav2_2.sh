@@ -721,12 +721,17 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   #fi
   #cd -
   as_user "cd \"$USER_HOME/slamnav2\" && \
-       mapfile -t BRS < <(git branch -r | sed 's| *origin/||' | grep -v HEAD); \
-       echo '--- 원격 브랜치 목록 ---'; \
-       for i in \"\${!BRS[@]}\"; do printf '%3d) %s\n' \"\$((i+1))\" \"\${BRS[i]}\"; done; \
-       read -rp '번호 선택(엔터=main): ' n; \
-       [[ -z \$n ]] && git checkout main || \
-       ( [[ \$n =~ ^[0-9]+$ && \$n -ge 1 && \$n -le \${#BRS[@]} ]] && git checkout \"\${BRS[\$((n-1))]}\" )
+    mapfile -t BRS < <(git branch -r | sed 's| *origin/||' | grep -v HEAD); \
+    echo '--- 원격 브랜치 목록 ---'; \
+    for i in \"\${!BRS[@]}\"; do printf '%3d) %s\n' \"\$((i+1))\" \"\${BRS[i]}\"; done; \
+    read -rp '번호 선택(엔터=main): ' n; \
+    if [[ -z \"\$n\" ]]; then \
+        git checkout main; \
+    elif [[ \"\$n\" =~ ^[0-9]+$ && \"\$n\" -ge 1 && \"\$n\" -le \${#BRS[@]} ]]; then \
+        git checkout \"\${BRS[\$((n-1))]}\"; \
+    else \
+        echo '[WARN] 잘못된 번호, 브랜치 변경 건너뜀'; \
+    fi"
 
   #-------------------------------------------------------------------------#
   # 3. 단축키 및 실행 스크립트 복사
