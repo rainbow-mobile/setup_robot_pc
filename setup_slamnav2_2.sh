@@ -347,18 +347,18 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   ########################################
   # 6. 무선 드라이버 (RTL8812AU) 설치
   ########################################
-  log_msg "========================================"
-  log_msg "4. 무선 드라이버 (RTL8812AU) 설치"
-  log_msg "========================================"
+  #log_msg "========================================"
+  #log_msg "4. 무선 드라이버 (RTL8812AU) 설치"
+  #log_msg "========================================"
 
-  run_step "RTL8812AU 드라이버" \
-      "[ -d rtl8812au ]" \
-      "git clone https://github.com/gnab/rtl8812au.git && \
-       sudo cp -r rtl8812au /usr/src/rtl8812au-4.2.2 && \
-       sudo dkms add -m rtl8812au -v 4.2.2 && \
-       sudo dkms build -m rtl8812au -v 4.2.2 && \
-       sudo dkms install -m rtl8812au -v 4.2.2 && \
-       sudo modprobe 8812au"
+  #run_step "RTL8812AU 드라이버" \
+  #    "[ -d rtl8812au ]" \
+  #    "git clone https://github.com/gnab/rtl8812au.git && \
+  #     sudo cp -r rtl8812au /usr/src/rtl8812au-4.2.2 && \
+  #     sudo dkms add -m rtl8812au -v 4.2.2 && \
+  #     sudo dkms build -m rtl8812au -v 4.2.2 && \
+  #     sudo dkms install -m rtl8812au -v 4.2.2 && \
+  #     sudo modprobe 8812au"
 
   ########################################
   # 7. SLAMNAV2 관련 의존성 및 SDK (소스 빌드)
