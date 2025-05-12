@@ -726,7 +726,7 @@ run_5() { # setup_programs_slamanv_shortcut.sh
        for i in \"\${!BRS[@]}\"; do printf '%3d) %s\n' \"\$((i+1))\" \"\${BRS[i]}\"; done; \
        read -rp '번호 선택(엔터=main): ' n; \
        [[ -z \$n ]] && git checkout main || \
-       ( [[ \$n =~ ^[0-9]+$ && \$n -ge 1 && \$n -le \${#BRS[@]} ]] && git checkout \"\${BRS[\$((n-1))]}\" )"
+       ( [[ \$n =~ ^[0-9]+$ && \$n -ge 1 && \$n -le \${#BRS[@]} ]] && git checkout \"\${BRS[\$((n-1))]}\" )
 
   #-------------------------------------------------------------------------#
   # 3. 단축키 및 실행 스크립트 복사
