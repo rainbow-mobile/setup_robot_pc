@@ -334,11 +334,14 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   log_msg "3. 스왑파일 설정"
   log_msg "========================================"
 
-  run_step "스왑파일 설정(32G)" \
-      "free -h | grep -q 'Swap:.*32G'" \
+  SWAP_SIZE=$([[ $MODE == "LIGHT" ]] && echo "8G" || echo "32G")
+  SWAP_MB=$([[ $MODE == "LIGHT" ]] && echo "8192" || echo "32768")
+
+  run_step "스왑파일 설정 ($SWAP_SIZE)" \
+      "free -h | grep -q \"Swap:.*$SWAP_SIZE\"" \
       "sudo swapoff /swapfile &> /dev/null || true && \
        sudo rm -f /swapfile && \
-       sudo fallocate -l 32G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=32768 && \
+       sudo fallocate -l $SWAP_SIZE /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=$SWAP_MB && \
        sudo chmod 600 /swapfile && \
        sudo mkswap /swapfile && \
        sudo swapon /swapfile && \

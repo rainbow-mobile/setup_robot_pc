@@ -1,49 +1,64 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+###############################################################################
+# build_terminal.sh
+#  · Qt 프로젝트를 터미널에서 자동으로 빌드하는 스크립트
+#  · 릴리즈 or 디버그 모드를 선택할 수 있음 (기본: release)
+###############################################################################
+set -euo pipefail
+IFS=$'\n\t'
 
-########################################
-# Qt 실행 파일 런처 스크립트 (log + env 설정 포함)
-#
-# 🔹 기능:
-#   - debug / release 모드 실행
-#   - 실행 로그 저장
-#   - Qt 관련 환경변수 설정 (예: plugin 경로)
-#
-# 사용법:
-#   ./run.sh [debug|release]
-#     예) ./run.sh
-#         ./run.sh debug
-########################################
+# ① 빌드 모드 선택 (기본: release)
+BUILD_MODE="${1:-release}"
 
-# 1. 실행 모드 설정
-MODE=${1:-release}
-SRC_DIR="$(dirname "$(realpath "$0")")"
-BUILD_DIR="$SRC_DIR/build-$MODE"
+# ② 사용자 디렉터리 정확히 추출
+REAL_USER=${SUDO_USER:-$USER}
+HOME_DIR=$(eval echo "~$REAL_USER")
+SRC_DIR="$HOME_DIR/code/app_slamnav2"
+PRO_FILE="$SRC_DIR/SLAMNAV2.pro"
+BUILD_DIR="$SRC_DIR/build"
+VTK_VERSION="9.1"
 
-# 2. 실행 파일 이름 (필요 시 수정)
-EXECUTABLE="SLAMNAV2"
-EXEC_PATH="$BUILD_DIR/$EXECUTABLE"
+# ③ SDK 경로
+ORB_INCLUDE="$HOME_DIR/OrbbecSDK/SDK/include"
+ORB_LIB="$HOME_DIR/OrbbecSDK/SDK/lib"
 
-# 3. 로그 저장 위치
-LOG_DIR="$BUILD_DIR/log"
-LOG_FILE="$LOG_DIR/run_$(date +%Y%m%d_%H%M%S).log"
+RPLIDAR_INCLUDE="$HOME_DIR/rplidar_sdk/sdk/include"
+RPLIDAR_LIB="$HOME_DIR/rplidar_sdk/output/Linux/Release"
 
-# 4. Qt 플랫폼 플러그인 경로 설정 (필요 시 수정)
-export QT_QPA_PLATFORM_PLUGIN_PATH="/usr/lib/qt5/plugins/platforms"
+# ④ 경로 확인 함수
+check_path() {
+    if [ ! -d "$1" ]; then
+        echo -e "⚠️  누락: $1"
+    else
+        echo -e "✅ 확인됨: $1"
+    fi
+}
 
-# 로그 디렉토리 생성
-mkdir -p "$LOG_DIR"
+echo "[INFO] Qt 프로젝트를 터미널에서 빌드합니다."
+echo "✅ 변수 설정 완료:
+   HOME_DIR=$HOME_DIR
+   SRC_DIR=$SRC_DIR
+   VTK_VERSION=$VTK_VERSION"
 
-# 5. 실행 파일 존재 확인
-if [[ ! -x "$EXEC_PATH" ]]; then
-    echo "❌ 실행 파일이 존재하거나 실행 권한이 없습니다: $EXEC_PATH"
-    echo "💡 먼저 ./build.sh $MODE 로 빌드하세요."
-    exit 1
-fi
+check_path "$ORB_INCLUDE"
+check_path "$RPLIDAR_INCLUDE"
 
-# 6. 실행
-echo "🚀 [$MODE 모드] $EXECUTABLE 실행 중..."
-echo "📁 로그 저장 위치: $LOG_FILE"
+# ⑤ 환경 변수 설정
+export QT_SELECT=qt5
+export QMAKE=$(/usr/bin/which qmake)
+export MAKECMD="make -j$(nproc)"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:/usr/local/lib:$ORB_LIB:$RPLIDAR_LIB"
 
-"$EXEC_PATH" 2>&1 | tee "$LOG_FILE"
+# ⑥ 빌드 디렉터리 생성
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
+
+# ⑦ qmake 및 make
+echo "🛠 qmake"
+"$QMAKE" "$PRO_FILE" CONFIG+=$BUILD_MODE
+echo "🔨 make"
+eval "$MAKECMD"
+
+# ⑧ 빌드 완료 메시지
+echo -e "\n✅ 빌드 완료: $BUILD_MODE 모드"
 
