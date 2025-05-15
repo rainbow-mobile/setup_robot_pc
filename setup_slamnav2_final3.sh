@@ -118,7 +118,12 @@ declare -A SCRIPTS=(
 )
 
 # 모드에 따라 1 · 2단계 제외
-if [[ $MODE == LIGHT ]]; then unset 'SCRIPTS[1]' 'SCRIPTS[2]'; fi
+#if [[ $MODE == LIGHT ]]; then unset 'SCRIPTS[1]' 'SCRIPTS[2]'; fi
+
+# 모드에 따라 센서 SDK(run_2)만 제외 (run_1은 남겨둠)
+if [[ $MODE == LIGHT ]]; then
+  unset 'SCRIPTS[2]'
+fi
 
 print_menu() {
   echo -e "\n설치할 단계 번호를 선택하세요:"
@@ -154,6 +159,13 @@ run_1() { # setup_system_build_env_s100-2.sh
 
   sudo -v
 
++  # ──────────────── LIGHT 모드 제어 ────────────────
++  # MODE==LIGHT 이면 #3, #7 블록만 건너뛰고 나머지는 수행
++  local SKIP_THIRD_AND_SEVENTH=false
++  if [[ "$MODE" == "LIGHT" ]]; then
++    SKIP_THIRD_AND_SEVENTH=true
++  fi
++  # ────────────────────────────────────────────────────
 
   ########################################
   # 1. 로그 설정 및 로깅 함수
@@ -214,6 +226,7 @@ run_1() { # setup_system_build_env_s100-2.sh
   log_msg "1. 시스템 업데이트 및 패키지 설치"
   log_msg "========================================"
 
+
   # 불필요한 패키지 제거
   log_msg "[시스템] 불필요한 패키지 제거 중..."
   if sudo apt remove -y update-notifier orca; then
@@ -230,7 +243,7 @@ run_1() { # setup_system_build_env_s100-2.sh
       FAILED+=("시스템 업데이트 실패")
       log_msg "[오류] 시스템 업데이트(apt-get upgrade) 중 문제가 발생했습니다. 로그 확인 요망."
   fi
-
+if ! $SKIP_THIRD_AND_SEVENTH; then
   # (중요) apt 패키지 설치 목록
   APT_PACKAGES=(
     curl
@@ -326,8 +339,8 @@ run_1() { # setup_system_build_env_s100-2.sh
 
   # 4.2 GRUB 설정 (USB 전원 관리 해제, intel_pstate 비활성화)
   run_step "GRUB 설정" \
-      "grep 'usbcore.autosuspend=-1 intel_pstate=disable' /etc/default/grub &> /dev/null" \
-      "sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"$/ usbcore.autosuspend=-1 intel_pstate=disable\"/' /etc/default/grub && sudo update-grub"
+    "grep 'usbcore.autosuspend=-1 intel_pstate=disable' /etc/default/grub &> /dev/null" \
+    "sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"$/ usbcore.autosuspend=-1 intel_pstate=disable\"/' /etc/default/grub && sudo update-grub"
   # 4.3 자동 업데이트 비활성화
   run_step "자동 업데이트 비활성화" \
       "grep 'APT::Periodic::Update-Package-Lists \"0\"' /etc/apt/apt.conf.d/20auto-upgrades &> /dev/null" \
@@ -340,7 +353,7 @@ EOF
 ' && sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades && \
 gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
-
+fi
   ########################################
   # 5. 스왑파일 설정
   ########################################
@@ -364,22 +377,23 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   ########################################
   # 6. 무선 드라이버 (RTL8812AU) 설치
   ########################################
-  log_msg "========================================"
-  log_msg "4. 무선 드라이버 (RTL8812AU) 설치"
-  log_msg "========================================"
+  #log_msg "========================================"
+  #log_msg "4. 무선 드라이버 (RTL8812AU) 설치"
+  #log_msg "========================================"
 
-  run_step "RTL8812AU 드라이버" \
-      "[ -d rtl8812au ]" \
-      "git clone https://github.com/gnab/rtl8812au.git && \
-       sudo cp -r rtl8812au /usr/src/rtl8812au-4.2.2 && \
-       sudo dkms add -m rtl8812au -v 4.2.2 && \
-       sudo dkms build -m rtl8812au -v 4.2.2 && \
-       sudo dkms install -m rtl8812au -v 4.2.2 && \
-       sudo modprobe 8812au"
+  #run_step "RTL8812AU 드라이버" \
+  #    "[ -d rtl8812au ]" \
+  #    "git clone https://github.com/gnab/rtl8812au.git && \
+  #     sudo cp -r rtl8812au /usr/src/rtl8812au-4.2.2 && \
+  #     sudo dkms add -m rtl8812au -v 4.2.2 && \
+  #     sudo dkms build -m rtl8812au -v 4.2.2 && \
+  #     sudo dkms install -m rtl8812au -v 4.2.2 && \
+  #     sudo modprobe 8812au"
 
   ########################################
   # 7. SLAMNAV2 관련 의존성 및 SDK (소스 빌드)
   ########################################
+  if ! $SKIP_THIRD_AND_SEVENTH; then
   log_msg "========================================"
   log_msg "5. SLAMNAV2 관련 의존성 및 SDK 설치"
   log_msg "========================================"
@@ -469,7 +483,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
        make -j$NUM_CORES && \
        sudo make install && \
        cd ~"
-
+  fi
   ########################################
   # 8. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트
   ########################################
@@ -716,7 +730,7 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   #else
   #    ( cd "$USER_HOME/slamnav2" && git pull )
   #fi
-  if [ ! -d \"$USER_HOME/slamnav2\" ]; then
+if [ ! -d "$USER_HOME/slamnav2" ]; then
     as_user "git clone https://github.com/rainbow-mobile/slamnav2.git \"$USER_HOME/slamnav2\""
   else
     as_user "(cd \"$USER_HOME/slamnav2\" && git pull)"
@@ -827,17 +841,31 @@ print_menu
 mapfile -t STEPS < <(read_selection)
 
 for n in "${STEPS[@]}"; do
-  # 슬래시 뒤 문자열을 잘라서 앞뒤 공백을 xargs 로 제거
   FN=$(echo "${SCRIPTS[$n]##*/}" | xargs)
+
+  # 함수가 정의돼 있는지 확인
   if declare -f "$FN" >/dev/null; then
     echo -e "\n=============================="
     echo "실행: ${SCRIPTS[$n]%%/*}"
     echo "=============================="
-    "$FN" || { FAILED+=("$FN"); log "[WARN] $FN 실패"; }
+
+    # Light 모드에서는 run_2 생략
+    if [[ $MODE == LIGHT && "$FN" == "run_2" ]]; then
+      echo "[SKIP] Light 모드에서는 run_2 생략"
+      SKIPPED+=("$FN")
+      continue
+    fi
+
+    "$FN" || {
+      FAILED+=("$FN")
+      log "[WARN] $FN 실패"
+    }
   else
     echo "[WARN] 잘못된 번호: $n"
   fi
+
 done
+
 
 #──────────────────────────────────────────────────────────────────────────────
 ## 5. 마무리
