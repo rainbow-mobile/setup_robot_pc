@@ -827,17 +827,31 @@ print_menu
 mapfile -t STEPS < <(read_selection)
 
 for n in "${STEPS[@]}"; do
-  # 슬래시 뒤 문자열을 잘라서 앞뒤 공백을 xargs 로 제거
   FN=$(echo "${SCRIPTS[$n]##*/}" | xargs)
+
+  # 함수가 정의돼 있는지 확인
   if declare -f "$FN" >/dev/null; then
     echo -e "\n=============================="
     echo "실행: ${SCRIPTS[$n]%%/*}"
     echo "=============================="
-    "$FN" || { FAILED+=("$FN"); log "[WARN] $FN 실패"; }
+
+    # Light 모드에서는 run_2 생략
+    if [[ $MODE == LIGHT && "$FN" == "run_2" ]]; then
+      echo "[SKIP] Light 모드에서는 run_2 생략"
+      SKIPPED+=("$FN")
+      continue
+    fi
+
+    "$FN" || {
+      FAILED+=("$FN")
+      log "[WARN] $FN 실패"
+    }
   else
     echo "[WARN] 잘못된 번호: $n"
   fi
+
 done
+
 
 #──────────────────────────────────────────────────────────────────────────────
 ## 5. 마무리

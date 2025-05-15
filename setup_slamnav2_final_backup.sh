@@ -364,18 +364,18 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   ########################################
   # 6. 무선 드라이버 (RTL8812AU) 설치
   ########################################
-  #log_msg "========================================"
-  #log_msg "4. 무선 드라이버 (RTL8812AU) 설치"
-  #log_msg "========================================"
+  log_msg "========================================"
+  log_msg "4. 무선 드라이버 (RTL8812AU) 설치"
+  log_msg "========================================"
 
-  #run_step "RTL8812AU 드라이버" \
-  #    "[ -d rtl8812au ]" \
-  #    "git clone https://github.com/gnab/rtl8812au.git && \
-  #     sudo cp -r rtl8812au /usr/src/rtl8812au-4.2.2 && \
-  #     sudo dkms add -m rtl8812au -v 4.2.2 && \
-  #     sudo dkms build -m rtl8812au -v 4.2.2 && \
-  #     sudo dkms install -m rtl8812au -v 4.2.2 && \
-  #     sudo modprobe 8812au"
+  run_step "RTL8812AU 드라이버" \
+      "[ -d rtl8812au ]" \
+      "git clone https://github.com/gnab/rtl8812au.git && \
+       sudo cp -r rtl8812au /usr/src/rtl8812au-4.2.2 && \
+       sudo dkms add -m rtl8812au -v 4.2.2 && \
+       sudo dkms build -m rtl8812au -v 4.2.2 && \
+       sudo dkms install -m rtl8812au -v 4.2.2 && \
+       sudo modprobe 8812au"
 
   ########################################
   # 7. SLAMNAV2 관련 의존성 및 SDK (소스 빌드)
@@ -827,31 +827,17 @@ print_menu
 mapfile -t STEPS < <(read_selection)
 
 for n in "${STEPS[@]}"; do
+  # 슬래시 뒤 문자열을 잘라서 앞뒤 공백을 xargs 로 제거
   FN=$(echo "${SCRIPTS[$n]##*/}" | xargs)
-
-  # 함수가 정의돼 있는지 확인
   if declare -f "$FN" >/dev/null; then
     echo -e "\n=============================="
     echo "실행: ${SCRIPTS[$n]%%/*}"
     echo "=============================="
-
-    # Light 모드에서는 run_2 생략
-    if [[ $MODE == LIGHT && "$FN" == "run_2" ]]; then
-      echo "[SKIP] Light 모드에서는 run_2 생략"
-      SKIPPED+=("$FN")
-      continue
-    fi
-
-    "$FN" || {
-      FAILED+=("$FN")
-      log "[WARN] $FN 실패"
-    }
+    "$FN" || { FAILED+=("$FN"); log "[WARN] $FN 실패"; }
   else
     echo "[WARN] 잘못된 번호: $n"
   fi
-
 done
-
 
 #──────────────────────────────────────────────────────────────────────────────
 ## 5. 마무리
