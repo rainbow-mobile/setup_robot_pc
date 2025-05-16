@@ -5,7 +5,7 @@
 ###############################################################################
 set -Eeuo pipefail
 
-TARGET_SCRIPT="/home/rainbow/run_rdk_install.sh"   # 필요 시 절대경로 수정
+TARGET_SCRIPT="/home/rainbow/setup_robot_pc/setup_web_ui.sh"   # 필요 시 절대경로 수정
 DESKTOP_FILE="$HOME/Desktop/install_rdk.desktop"
 
 # 바탕화면 폴더가 없으면 생성
