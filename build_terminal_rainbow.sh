@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 1. 빌드 디렉터리 설정 및 생성
-BUILD_DIR="/home/rainbow/build-SLAMNAV2-Desktop-Release2"
+BUILD_DIR="/home/rainbow/build-SLAMNAV2-Desktop-Release"
 PROJECT_FILE="/home/rainbow/app_slamnav2/SLAMNAV2.pro"   # SLAMNAV2.pro의 경로 (필요에 맞게 수정)
 
 mkdir -p "$BUILD_DIR"                     # 빌드 디렉터리가 없으면 생성
