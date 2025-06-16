@@ -366,18 +366,18 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   ########################################
   # 6. 무선 드라이버 (RTL8812AU) 설치
   ########################################
-  log_msg "========================================"
-  log_msg "4. 무선 드라이버 (RTL8812AU) 설치"
-  log_msg "========================================"
+  #log_msg "========================================"
+  #log_msg "4. 무선 드라이버 (RTL8812AU) 설치"
+  #log_msg "========================================"
 
-  run_step "RTL8812AU 드라이버" \
-      "[ -d rtl8812au ]" \
-      "git clone https://github.com/gnab/rtl8812au.git && \
-       sudo cp -r rtl8812au /usr/src/rtl8812au-4.2.2 && \
-       sudo dkms add -m rtl8812au -v 4.2.2 && \
-       sudo dkms build -m rtl8812au -v 4.2.2 && \
-       sudo dkms install -m rtl8812au -v 4.2.2 && \
-       sudo modprobe 8812au"
+  #run_step "RTL8812AU 드라이버" \
+  #    "[ -d rtl8812au ]" \
+  #    "git clone https://github.com/gnab/rtl8812au.git && \
+  #     sudo cp -r rtl8812au /usr/src/rtl8812au-4.2.2 && \
+  #     sudo dkms add -m rtl8812au -v 4.2.2 && \
+  #     sudo dkms build -m rtl8812au -v 4.2.2 && \
+  #     sudo dkms install -m rtl8812au -v 4.2.2 && \
+  #     sudo modprobe 8812au"
 
   ########################################
   # 7. SLAMNAV2 관련 의존성 및 SDK (소스 빌드)
@@ -515,9 +515,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   run_step "USB udev 규칙" \
       "test -f /etc/udev/rules.d/99-usb-serial.rules" \
       "sudo bash -c 'cat > /etc/udev/rules.d/99-usb-serial.rules <<EOF
-  SUBSYSTEM==\"tty\", KERNELS==\"1-7\", ATTRS{idVendor}==\"10c4\", ATTRS{idProduct}==\"ea60\", SYMLINK+=\"ttyRP0\"
-  SUBSYSTEM==\"tty\", KERNELS==\"1-2.3\", ATTRS{idVendor}==\"067b\", ATTRS{idProduct}==\"2303\", SYMLINK+=\"ttyBL0\"
-  SUBSYSTEM==\"tty\", KERNELS==\"1-1.2\", ATTRS{idVendor}==\"2109\", ATTRS{idProduct}==\"0812\", SYMLINK+=\"ttyCB0\"
+  SUBSYSTEM==\"tty\", KERNELS==\"1-3.1\", ATTRS{idVendor}==\"10c4\", ATTRS{idProduct}==\"ea60\", SYMLINK+=\"ttyRP0\"
   EOF
   ' && sudo udevadm control --reload-rules && sudo udevadm trigger"
 
