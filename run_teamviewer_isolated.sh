@@ -1,16 +1,19 @@
 #!/bin/bash
 
-TEAMVIEWER_DIR=/opt/teamviewer/tv_bin
+# TeamViewer 경로 설정
+TV_BIN="/opt/teamviewer/tv_bin"
+TV_LIB="$TV_BIN/RTlib/qt/lib"
+TV_PLUGIN="$TV_BIN/RTlib/qt/plugins"
 
-# TeamViewer 전용 Qt 환경 구성
-export QT_PLUGIN_PATH="$TEAMVIEWER_DIR/qt/plugins"
-export QT_QPA_PLATFORM_PLUGIN_PATH="$TEAMVIEWER_DIR/qt/plugins/platforms"
-export LD_LIBRARY_PATH="$TEAMVIEWER_DIR/qt/lib:$LD_LIBRARY_PATH"
-export QML2_IMPORT_PATH="$TEAMVIEWER_DIR/qt/qml"
+# 강제 환경 설정
+export QT_QPA_PLATFORM_PLUGIN_PATH="$TV_PLUGIN/platforms"
+export QT_PLUGIN_PATH="$TV_PLUGIN"
+export QML2_IMPORT_PATH="$TV_BIN/RTlib/qt/qml"
+export LD_LIBRARY_PATH="$TV_LIB"
 
-# QT_DEBUG_PLUGINS=1 로 디버깅도 가능
-# export QT_DEBUG_PLUGINS=1
+# 문제 되는 시스템 경로 제거 (중요!)
+unset LD_PRELOAD
 
-# TeamViewer 실행
-exec "$TEAMVIEWER_DIR/TeamViewer"
+# 실행
+exec "$TV_BIN/TeamViewer"
 
