@@ -1,15 +1,11 @@
 #!/bin/bash
 
-# PM2 시작 및 종료 .desktop 바로가기를 생성하는 스크립트입니다.
-# 바로가기가 생성될 위치 (기본값: 사용자의 바탕화면)
+# PM2 시작 및 종료 .desktop 바로가기를 생성하고 '신뢰' 상태로 만드는 스크립트입니다.
 OUTPUT_DIR="${HOME}/Desktop"
-
-# 생성될 파일 이름 정의
 START_FILE="pm2-start.desktop"
 STOP_FILE="pm2-stop.desktop"
 
 echo "PM2 바로가기 생성을 시작합니다..."
-echo "생성 위치: ${OUTPUT_DIR}"
 
 # 1. PM2 시작 바로가기 파일 생성
 cat <<EOF > "${OUTPUT_DIR}/${START_FILE}"
@@ -37,9 +33,14 @@ Terminal=true
 Categories=Application;System;
 EOF
 
-# 3. 생성된 바로가기 파일에 실행 권한 부여
+# 3. 파일에 실행 권한 부여
 chmod +x "${OUTPUT_DIR}/${START_FILE}"
 chmod +x "${OUTPUT_DIR}/${STOP_FILE}"
 
+# 4. 파일을 '신뢰하는 앱'으로 설정 (가장 중요!)
+echo "'신뢰하는 앱'으로 설정합니다..."
+gio set "${OUTPUT_DIR}/${START_FILE}" "metadata::trusted" yes
+gio set "${OUTPUT_DIR}/${STOP_FILE}" "metadata::trusted" yes
+
 echo ""
-echo "✅ 완료! 바탕화면에 'PM2 시작'과 'PM2 종료' 바로가기가 생성되었습니다."
+echo "✅ 완료! 바탕화면에 신뢰 상태의 바로가기가 생성되었습니다."
