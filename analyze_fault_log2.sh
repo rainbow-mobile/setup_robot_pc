@@ -31,7 +31,7 @@ fi
 # --------------------------------------------------------------
 # 3) fault_log 디렉터리 경로 결정 (환경 변수로 덮어쓰기 가능)
 # --------------------------------------------------------------
-LOGDIR="${LOGDIR_PATH:-$PROJ_ROOT/snlog/fault_log}"
+LOGDIR="${LOGDIR_PATH:-$PROJ_ROOT/slamnav2/snlog/fault_log}"
 [[ -d "$LOGDIR" ]] || { echo "[ERR] fault_log 디렉터리를 찾지 못했습니다: $LOGDIR"; exit 1; }
 
 # 정규식: /path/to/module(+0xOFF)
