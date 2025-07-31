@@ -4,7 +4,7 @@
 
 # --- 설정 ---
 # 분석 스크립트 경로 (수정 가능)
-ANALYZE_SCRIPT_PATH="$HOME/setup_robot_pc/analyze_fault_log2.sh"
+ANALYZE_SCRIPT_PATH="$HOME/setup_robot_pc/analyze_fault_log3.sh"
 
 # 생성될 바탕화면 바로가기 파일 경로
 DESKTOP_FILE_PATH="$HOME/Desktop/analyze_fault_log.desktop"
