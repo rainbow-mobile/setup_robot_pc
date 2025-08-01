@@ -1,7 +1,7 @@
 #!/bin/bash
 
 APP_NAME="SLAMNAV2"
-SCRIPT_PATH="/home/setup_robot_pc/start_slamnav2.sh"
+SCRIPT_PATH="/home/rainbow/setup_robot_pc/start_slamnav2.sh"
 
 echo "🧹 기존 PM2 앱 삭제 중: $APP_NAME"
 pm2 delete "$APP_NAME" >/dev/null 2>&1
