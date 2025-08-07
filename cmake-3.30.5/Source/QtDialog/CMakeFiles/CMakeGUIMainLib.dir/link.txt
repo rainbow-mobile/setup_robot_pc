@@ -1,2 +1,0 @@
-/usr/bin/ar qc libCMakeGUIMainLib.a CMakeFiles/CMakeGUIMainLib.dir/CMakeSetup.cxx.o
-/usr/bin/ranlib libCMakeGUIMainLib.a
