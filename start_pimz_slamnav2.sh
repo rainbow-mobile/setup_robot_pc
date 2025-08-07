@@ -2,7 +2,7 @@
 cd /home/odroid/slamnav2
 
 # GUI 환경 보장
-export DISPLAY=:0
+export DISPLAY=:99
 export XAUTHORITY=/home/odroid/.Xauthority
 export QT_QPA_PLATFORM=xcb
 
