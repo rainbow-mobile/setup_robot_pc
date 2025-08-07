@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /home/rainbow/slamnav2
+cd /home/odroid/slamnav2
 
 # GUI 환경 보장
 export DISPLAY=:0
