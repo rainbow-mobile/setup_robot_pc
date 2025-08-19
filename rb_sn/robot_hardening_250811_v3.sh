@@ -86,11 +86,71 @@ declare -ag INSTALLED=()  SKIPPED=()  FAILED=()
 #──────────────────────────────────────────────────────────────────────────────
 ## 1. 설치 모드 선택 (Full / Light)
 #──────────────────────────────────────────────────────────────────────────────
+
+print_installation_plan() {
+  echo -e "\n========== 설치 계획 ($MODE 모드) =========="
+  echo "📋 설치될 항목:"
+  
+  if [[ $MODE == "FULL" ]]; then
+    echo "✅ [FULL 모드] 모든 항목 설치"
+    echo "  1) 빌드 환경·의존성 (APT 패키지, CMake, Sophus, GTSAM, OMPL 등)"
+    echo "  2) 센서 SDK 설치 (rplidar_sdk, OrbbecSDK, sick_safetyscanners_base)"
+    echo "  3) obSensor udev 규칙"
+    echo "  4) LD_LIBRARY_PATH 추가"
+    echo "  5) 단축키·리포지토리 (slamnav2, diagnosis)"
+    echo "  6) TeamViewer 설치"
+    echo ""
+    echo "📦 주요 패키지:"
+    echo "  - Qt 개발 환경 (qtcreator, qtbase5-dev, qtmultimedia5-dev 등)"
+    echo "  - OpenCV, PCL, Eigen3, Boost"
+    echo "  - CMake 3.27.7, Sophus, GTSAM 4.2.0, OMPL 1.6.0"
+    echo "  - MySQL Server, SSH Server"
+    echo "  - 스왑파일: 32GB"
+  else
+    echo "⚡ [LIGHT 모드] 최소 필수 항목만 설치"
+    echo "  1) 빌드 환경·의존성 (Qt 제외한 필수 패키지만)"
+    echo "  3) obSensor udev 규칙"
+    echo "  4) LD_LIBRARY_PATH 추가"
+    echo "  5) 단축키·리포지토리 (slamnav2, diagnosis)"
+    echo "  6) TeamViewer 설치"
+    echo ""
+    echo "📦 설치 패키지:"
+    echo "  - Qt 런타임 및 라이브러리 (libqt5gui5, qtbase5-dev, qtmultimedia5-dev 등)"
+    echo "  - 빌드 도구 (cmake, git, build-essential)"
+    echo "  - 라이브러리 (OpenCV, PCL, Eigen3, Boost)"
+    echo "  - 서버 (MySQL, SSH)"
+    echo "  - 스왑파일: 8GB"
+    echo ""
+    echo "⚠️  제외되는 항목:"
+    echo "  - Qt Creator IDE (qtcreator)"
+    echo "  - 센서 SDK 설치 (STEP 2)"
+  fi
+  
+  echo ""
+  echo "💾 예상 설치 시간:"
+  if [[ $MODE == "FULL" ]]; then
+    echo "  - FULL 모드: 약 30-60분 (인터넷 속도에 따라 다름)"
+  else
+    echo "  - LIGHT 모드: 약 10-15분"
+  fi
+  echo "=========================================="
+}
+
 read -rp $'\n'"설치 모드 선택 (f=Full, l=Light) [f]: " MODE_SEL
 MODE_SEL=${MODE_SEL:-f}
 [[ $MODE_SEL =~ ^[FfLl]$ ]] || { echo "잘못된 입력"; exit 1; }
 MODE=$([[ $MODE_SEL =~ ^[Ll]$ ]] && echo "LIGHT" || echo "FULL")
 log "▶ 설치 모드: $MODE"
+
+# 설치 계획 출력
+print_installation_plan
+
+# 사용자 확인
+read -rp "계속 진행하시겠습니까? (y/N): " confirm
+if [[ ! $confirm =~ ^[Yy]$ ]]; then
+  echo "설치를 취소합니다."
+  exit 0
+fi
 ###############################################################################
 # (Light 전용) Qt 런타임 최소 패키지 – xcb platform-plugin 포함
 ###############################################################################
@@ -118,7 +178,7 @@ declare -A SCRIPTS=(
 )
 
 # 모드에 따라 1 · 2단계 제외
-if [[ $MODE == LIGHT ]]; then unset 'SCRIPTS[1]' 'SCRIPTS[2]'; fi
+if [[ $MODE == LIGHT ]]; then unset 'SCRIPTS[2]'; fi
 
 print_menu() {
   echo -e "\n설치할 단계 번호를 선택하세요:"
@@ -232,56 +292,110 @@ run_1() { # setup_system_build_env_s100-2.sh
   fi
 
   # (중요) apt 패키지 설치 목록
-  APT_PACKAGES=(
-    curl
-    libqt5websockets5-dev
-    qtmultimedia5-dev
-    libquazip5-dev
-    sshpass
-    qtdeclarative5-dev
-    libvtk9-qt-dev
-    qtcreator
-    qtbase5-dev
-    qt5-qmake
-    cmake
-    libtbb-dev
-    libboost-all-dev
-    libopencv-dev
-    libopencv-contrib-dev
-    libeigen3-dev
-    cmake-gui
-    git
-    htop
-    build-essential
-    rapidjson-dev
-    libboost-system-dev
-    libboost-thread-dev
-    libssl-dev
-    nmap
-    libqt5multimedia5-plugins
-    gstreamer1.0-plugins-base
-    gstreamer1.0-plugins-good
-    gstreamer1.0-plugins-bad
-    gstreamer1.0-plugins-ugly
-    libpcl-dev
-    libgstreamer1.0-dev
-    libgstreamer-plugins-base1.0-dev
-    dkms
-    qtquickcontrols2-5-dev
-    libqt5serialport5-dev
-    ccache
-    qml-module-qtquick-controls2
-    qml-module-qtmultimedia
-    qml-module-qt-labs-platform
-    qml-module-qtquick-shapes
-    nmap-common
-    flex
-    bison
-    mysql-server
-    expect
-    openssh-server
-    net-tools
-  )
+  if [[ $MODE == "LIGHT" ]]; then
+    # Light 모드: Qt 개발 도구만 제외, 런타임은 포함
+    APT_PACKAGES=(
+      curl
+      libqt5websockets5-dev
+      qtmultimedia5-dev
+      libquazip5-dev
+      sshpass
+      qtdeclarative5-dev
+      libvtk9-qt-dev
+      qtbase5-dev
+      qt5-qmake
+      cmake
+      libtbb-dev
+      libboost-all-dev
+      libopencv-dev
+      libopencv-contrib-dev
+      libeigen3-dev
+      cmake-gui
+      git
+      htop
+      build-essential
+      rapidjson-dev
+      libboost-system-dev
+      libboost-thread-dev
+      libssl-dev
+      nmap
+      libqt5multimedia5-plugins
+      gstreamer1.0-plugins-base
+      gstreamer1.0-plugins-good
+      gstreamer1.0-plugins-bad
+      gstreamer1.0-plugins-ugly
+      libpcl-dev
+      libgstreamer1.0-dev
+      libgstreamer-plugins-base1.0-dev
+      dkms
+      qtquickcontrols2-5-dev
+      libqt5serialport5-dev
+      ccache
+      qml-module-qtquick-controls2
+      qml-module-qtmultimedia
+      qml-module-qt-labs-platform
+      qml-module-qtquick-shapes
+      nmap-common
+      flex
+      bison
+      mysql-server
+      expect
+      openssh-server
+      net-tools
+    )
+  else
+    # Full 모드: 모든 패키지 포함 (qtcreator 포함)
+    APT_PACKAGES=(
+      curl
+      libqt5websockets5-dev
+      qtmultimedia5-dev
+      libquazip5-dev
+      sshpass
+      qtdeclarative5-dev
+      libvtk9-qt-dev
+      qtcreator
+      qtbase5-dev
+      qt5-qmake
+      cmake
+      libtbb-dev
+      libboost-all-dev
+      libopencv-dev
+      libopencv-contrib-dev
+      libeigen3-dev
+      cmake-gui
+      git
+      htop
+      build-essential
+      rapidjson-dev
+      libboost-system-dev
+      libboost-thread-dev
+      libssl-dev
+      nmap
+      libqt5multimedia5-plugins
+      gstreamer1.0-plugins-base
+      gstreamer1.0-plugins-good
+      gstreamer1.0-plugins-bad
+      gstreamer1.0-plugins-ugly
+      libpcl-dev
+      libgstreamer1.0-dev
+      libgstreamer-plugins-base1.0-dev
+      dkms
+      qtquickcontrols2-5-dev
+      libqt5serialport5-dev
+      ccache
+      qml-module-qtquick-controls2
+      qml-module-qtmultimedia
+      qml-module-qt-labs-platform
+      qml-module-qtquick-shapes
+      nmap-common
+      flex
+      bison
+      mysql-server
+      expect
+      openssh-server
+      net-tools
+    )
+  fi
 
   log_msg "[시스템] APT 패키지 설치(무조건 시도). 이미 설치된 경우 별도 조치 없음."
   for pkg in "${APT_PACKAGES[@]}"; do
@@ -866,5 +980,3 @@ echo "⏭️  건너뜀:"; for i in "${SKIPPED[@]}";   do echo "  - $i"; done
 echo "❌ 실패:";   for i in "${FAILED[@]}";    do echo "  - $i"; done
 echo "======================================"
 log "설치 완료 — 새 터미널에서 LD_LIBRARY_PATH·dialout 적용 여부를 확인하세요."
-
-
