@@ -86,21 +86,25 @@ fi
 # echo "QT_DEBUG_PLUGINS=1" >> "$ENV_FILE"
 
 # === 3) systemd 유저 서비스 생성 ===
+# 25/09/16 issue : sensor & PDU data 안받아와지는 이슈 해결용
 mkdir -p "$USR_SD_DIR"
 log "systemd 유저 서비스 작성: $SERVICE_FILE"
 cat > "$SERVICE_FILE" <<ESVC
 [Unit]
 Description=SLAMNAV2 (GUI, user session)
+After=multi-user.target
+After=network-online.target remote-fs.target
+After=systemd-udev-settle.service
 After=graphical-session.target
-Wants=graphical-session.target
 
 [Service]
+ExecStartPre=/bin/bash -c 'if [ ! -f /tmp/slamnav2_started ]; then sleep 15; touch /tmp/slamnav2_started; fi'
+Type=simple
 WorkingDirectory=%h/slamnav2
 EnvironmentFile=%h/.config/slamnav2/env
 ExecStart=%h/slamnav2/SLAMNAV2
 Restart=on-failure
 RestartSec=2
-# 로그를 journal로
 StandardOutput=journal
 StandardError=journal
 
@@ -112,6 +116,9 @@ ESVC
 chown -R "$USER_NAME":"$USER_NAME" "$CONF_DIR" "$USR_SD_DIR"
 
 # === 5) 서비스 등록 및 즉시 시작 ===
+# 25/09/16 issue : sensor & PDU data 안받아와지는 이슈 해결용
+log "user systemd를 로그인 세션 없이도 계속 돌리는 명령어"
+loginctl enable-linger rainbow
 log "systemd 유저 데몬 리로드"
 sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/$(id -u "$USER_NAME")" systemctl --user daemon-reload
 
