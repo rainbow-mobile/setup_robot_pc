@@ -1,4 +1,4 @@
-cat > ~/setup_slamnav2_systemd.sh <<'EOF'
+#cat > ~/setup_slamnav2_systemd.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -124,6 +124,25 @@ sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/$(id -u "$USER_NAME")" systemctl
 
 log "서비스 enable & start"
 sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/$(id -u "$USER_NAME")" systemctl --user enable --now slamnav2.service
+
+
+# === alias 등록 ===
+  if ! grep -q "slamnav2-logs" "$HOME_DIR/.bashrc"; then
+    log "alias 등록을 ~/.bashrc에 추가합니다."
+    cat >> "$HOME_DIR/.bashrc" <<'ALIAS'
+# SLAMNAV2 systemd 관리용 alias
+alias slamnav2-logs='journalctl --user -u slamnav2.service -f'
+alias slamnav2-status='systemctl --user status slamnav2.service --no-pager'
+alias slamnav2-restart='systemctl --user restart slamnav2.service'
+alias slamnav2-stop='systemctl --user stop slamnav2.service'
+ALIAS
+  fi
+
+  log "설치/등록/시작 + alias 등록 완료!"
+  echo " - 상태:   slamnav2-status"
+  echo " - 로그:   slamnav2-logs"
+  echo " - 재시작: slamnav2-restart"
+
 
 # === 6) 요약/도움말 ===
 log "설치 완료!"
