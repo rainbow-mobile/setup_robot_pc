@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # 목적:
 #  1) 기존 rainbow 계정이 있으면 제거 후 새로 생성 (비번: rainbow) + sudo 권한 부여
-#  2) --delete-ubuntu 옵션 시 ubuntu 계정(및 홈) 삭제 (안전검사 포함, --force로 강제)
+#  2) ubuntu 계정의 추가 그룹을 rainbow에 복제 (ubuntu가 있을 때)
+#  3) --delete-ubuntu 옵션 시 ubuntu 계정(및 홈) 삭제 (안전검사 포함, --force로 강제)
 # 사용: sudo ./setup_rainbow.sh [--delete-ubuntu] [--force]
 
-# sudo ./setup_rainbow.sh                       	# ubuntu 삭제 안 함(기본)
-# sudo ./setup_rainbow.sh --delete-ubuntu       	# ubuntu 자동 삭제(안전검사 통과 시)
-# sudo ./setup_rainbow.sh --delete-ubuntu --force  	# 강제 삭제(위험, 주의)
+# sudo ./setup_rainbow.sh                         # ubuntu 삭제 안 함(기본)
+# sudo ./setup_rainbow.sh --delete-ubuntu         # ubuntu 자동 삭제(안전검사 통과 시)
+# sudo ./setup_rainbow.sh --delete-ubuntu --force # 강제 삭제(주의)
 
 set -euo pipefail
 
@@ -46,7 +47,6 @@ kill_user_procs() {
 
 delete_user_completely() {
   local user="$1"
-  # deluser 우선, 없으면 userdel 사용
   if command -v deluser >/dev/null 2>&1; then
     log "deluser --remove-home $user"
     deluser --remove-home "$user"
@@ -87,27 +87,41 @@ create_rainbow() {
   chmod 700 "/home/${TARGET_USER}" || true
 }
 
+sync_groups_from_ubuntu() {
+  if ! getent passwd ubuntu >/dev/null 2>&1; then
+    log "'ubuntu' 계정이 없어 그룹 복제를 건너뜁니다."
+    return 0
+  fi
+
+  # ubuntu의 보조 그룹만 추출(자기 primary 그룹 'ubuntu' 제외)
+  local UB_GROUPS
+  UB_GROUPS=$(id -nG ubuntu | tr ' ' '\n' | grep -v '^ubuntu$' | paste -sd, -)
+
+  if [[ -n "${UB_GROUPS:-}" ]]; then
+    log "ubuntu의 그룹을 rainbow에 추가합니다: ${UB_GROUPS}"
+    usermod -aG "${UB_GROUPS}" "${TARGET_USER}" || err "그룹 복제 실패"
+  else
+    warn "ubuntu의 추가 그룹이 없습니다."
+  fi
+}
+
 maybe_delete_ubuntu() {
   $DELETE_UBUNTU || { log "ubuntu 계정 삭제 옵션 미사용: 건너뜁니다."; return 0; }
 
-  # 존재 여부
   if ! getent passwd ubuntu >/dev/null 2>&1; then
     log "'ubuntu' 계정이 존재하지 않습니다: 건너뜁니다."
     return 0
   fi
 
-  # 안전 검사: 현재 sudo를 실행한 사용자가 ubuntu 인가?
-  # - SUDO_USER: sudo를 호출한 원래 사용자
-  # - LOGNAME/USER도 환경에 따라 참고
-  SUDO_CALLER="${SUDO_USER:-${LOGNAME:-${USER:-}}}"
-
+  # 현재 sudo를 호출한 사용자(ubuntu라면 기본 차단)
+  local SUDO_CALLER="${SUDO_USER:-${LOGNAME:-${USER:-}}}"
   if [[ "${SUDO_CALLER}" == "ubuntu" && "${FORCE_DELETE}" == false ]]; then
-    warn "현재 세션이 'ubuntu'에서 sudo로 실행 중입니다. 세션이 끊기거나 문제가 발생할 수 있어 삭제를 차단합니다."
-    warn "정말 삭제하려면: --delete-ubuntu --force 옵션을 사용하세요. (권장: rainbow로 로그인한 뒤 실행)"
+    warn "현재 세션이 'ubuntu'에서 sudo로 실행 중입니다. 세션 끊김 위험으로 삭제를 차단합니다."
+    warn "정말 삭제하려면: --delete-ubuntu --force (권장: rainbow로 로그인 후 실행)"
     return 0
   fi
 
-  # rainbow가 sudo 권한을 갖는지(그룹 확인) — 최소 안전망
+  # rainbow가 sudo 권한 보유 여부 확인
   if id -nG "${TARGET_USER}" | tr ' ' '\n' | grep -qx sudo; then
     log "'${TARGET_USER}'의 sudo 권한 확인 완료."
   else
@@ -122,9 +136,10 @@ maybe_delete_ubuntu() {
   log "'ubuntu' 계정 삭제 완료."
 }
 
-# === 실행 ===
+# === 실행 흐름 ===
 need_root
 create_rainbow
+sync_groups_from_ubuntu
 maybe_delete_ubuntu
 
 # 요약
@@ -137,5 +152,5 @@ echo "  쉘     : ${DEFAULT_SHELL}"
 echo "  sudo   : 부여됨"
 $DELETE_UBUNTU && echo "  ubuntu : 삭제 시도 완료(상세는 로그 참고)"
 echo "----------------------------------------"
-echo "이제 로그아웃 후 '${TARGET_USER}' 계정으로 로그인해 사용하세요."
+echo "로그아웃 후 '${TARGET_USER}' 계정으로 로그인하거나, 'su - ${TARGET_USER}'로 새 세션을 시작하세요."
 
