@@ -118,7 +118,7 @@ chown -R "$USER_NAME":"$USER_NAME" "$CONF_DIR" "$USR_SD_DIR"
 # === 5) 서비스 등록 및 즉시 시작 ===
 # 25/09/16 issue : sensor & PDU data 안받아와지는 이슈 해결용
 log "user systemd를 로그인 세션 없이도 계속 돌리는 명령어"
-loginctl enable-linger rainbow
+loginctl enable-linger "$USER_NAME"
 log "systemd 유저 데몬 리로드"
 sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/$(id -u "$USER_NAME")" systemctl --user daemon-reload
 
