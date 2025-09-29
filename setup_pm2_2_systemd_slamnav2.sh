@@ -1,4 +1,3 @@
-#cat > ~/setup_slamnav2_systemd.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -82,29 +81,24 @@ if [[ -n "$XAUTH_VAL" && -f "$XAUTH_VAL" ]]; then
   echo "XAUTHORITY=$XAUTH_VAL" >> "$ENV_FILE"
 fi
 
-# 디버깅용(필요시 주석 해제)
-# echo "QT_DEBUG_PLUGINS=1" >> "$ENV_FILE"
-
 # === 3) systemd 유저 서비스 생성 ===
-# 25/09/16 issue : sensor & PDU data 안받아와지는 이슈 해결용
 mkdir -p "$USR_SD_DIR"
 log "systemd 유저 서비스 작성: $SERVICE_FILE"
 cat > "$SERVICE_FILE" <<ESVC
 [Unit]
 Description=SLAMNAV2 (GUI, user session)
-After=multi-user.target
-After=network-online.target remote-fs.target
-After=systemd-udev-settle.service
-After=graphical-session.target
+# GUI 애플리케이션이므로 그래픽 세션 및 네트워크가 준비된 후에 시작합니다.
+After=graphical-session.target network-online.target
+Wants=network-online.target
 
 [Service]
-ExecStartPre=/bin/bash -c 'if [ ! -f /tmp/slamnav2_started ]; then sleep 15; touch /tmp/slamnav2_started; fi'
 Type=simple
+# systemd의 %h는 사용자의 홈 디렉터리를 의미합니다.
 WorkingDirectory=%h/slamnav2
 EnvironmentFile=%h/.config/slamnav2/env
 ExecStart=%h/slamnav2/SLAMNAV2
 Restart=on-failure
-RestartSec=2
+RestartSec=5
 StandardOutput=journal
 StandardError=journal
 
@@ -116,47 +110,41 @@ ESVC
 chown -R "$USER_NAME":"$USER_NAME" "$CONF_DIR" "$USR_SD_DIR"
 
 # === 5) 서비스 등록 및 즉시 시작 ===
-# 25/09/16 issue : sensor & PDU data 안받아와지는 이슈 해결용
-log "user systemd를 로그인 세션 없이도 계속 돌리는 명령어"
+log "사용자 서비스가 로그아웃 후에도 실행되도록 linger 활성화"
 loginctl enable-linger "$USER_NAME"
+
+# root 권한으로 사용자의 systemd 데몬(--user)을 제어하려면,
+# 사용자의 D-Bus 세션에 연결하기 위해 XDG_RUNTIME_DIR 환경 변수를 명시해야 합니다.
 log "systemd 유저 데몬 리로드"
 sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/$(id -u "$USER_NAME")" systemctl --user daemon-reload
 
-log "서비스 enable & start"
+log "서비스 활성화 및 시작"
 sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/$(id -u "$USER_NAME")" systemctl --user enable --now slamnav2.service
 
-
 # === alias 등록 ===
-  if ! grep -q "slamnav2-logs" "$HOME_DIR/.bashrc"; then
-    log "alias 등록을 ~/.bashrc에 추가합니다."
-    cat >> "$HOME_DIR/.bashrc" <<'ALIAS'
+if ! grep -q "slamnav2-logs" "$HOME_DIR/.bashrc"; then
+  log "관리용 alias를 ~/.bashrc에 추가합니다."
+  cat >> "$HOME_DIR/.bashrc" <<'ALIAS'
+
 # SLAMNAV2 systemd 관리용 alias
 alias slamnav2-logs='journalctl --user -u slamnav2.service -f'
 alias slamnav2-status='systemctl --user status slamnav2.service --no-pager'
 alias slamnav2-restart='systemctl --user restart slamnav2.service'
 alias slamnav2-stop='systemctl --user stop slamnav2.service'
 ALIAS
-  fi
-
-  log "설치/등록/시작 + alias 등록 완료!"
-  echo " - 상태:   slamnav2-status"
-  echo " - 로그:   slamnav2-logs"
-  echo " - 재시작: slamnav2-restart"
-
+  log "새 터미널을 열거나 'source ~/.bashrc'를 실행하여 alias를 적용하세요."
+fi
 
 # === 6) 요약/도움말 ===
 log "설치 완료!"
 echo
-echo " - 상태 확인:   systemctl --user status slamnav2.service"
-echo " - 실시간 로그: journalctl --user -u slamnav2.service -f"
+echo "아래 명령어로 서비스를 관리할 수 있습니다 (alias가 적용된 새 터미널에서):"
+echo " - 상태 확인:   slamnav2-status"
+echo " - 실시간 로그: slamnav2-logs"
+echo " - 재시작:      slamnav2-restart"
+echo " - 중지:        slamnav2-stop"
 echo
 echo "문제가 있으면 아래를 확인하세요:"
-echo " 1) xcb/wayland 관련 패키지:  sudo apt install -y xauth libxcb-cursor0 libxcb-xinerama0 libxkbcommon-x11-0 libgl1 libx11-xcb1"
-echo " 2) DISPLAY/XAUTHORITY가 필요한 Xorg 환경인지:  echo \$XDG_SESSION_TYPE"
-echo " 3) 의존 라이브러리:  cd $APP_DIR && ldd ./SLAMNAV2 | grep 'not found' || echo 'OK'"
-EOF
-
-chmod +x ~/setup_slamnav2_systemd.sh
-echo "생성됨: ~/setup_slamnav2_systemd.sh"
-echo "실행:   bash ~/setup_slamnav2_systemd.sh"
-
+echo " 1) GUI 관련 패키지:  sudo apt install -y xauth libxcb-cursor0 libxcb-xinerama0 libxkbcommon-x11-0 libgl1 libx11-xcb1"
+echo " 2) 현재 세션 타입:  echo \$XDG_SESSION_TYPE"
+echo " 3) 의존 라이브러리:  ldd $BIN_PATH | grep 'not found' || echo '의존성 문제 없음'"
