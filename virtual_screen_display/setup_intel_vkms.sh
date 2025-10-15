@@ -1,107 +1,85 @@
 #!/bin/bash
 
 # 이 스크립트는 Intel 기반 시스템에서 vkms 커널 모듈을 사용하여 가상 모니터를 설정하거나 제거합니다.
-# 1280x1024 해상도를 사용하도록 Xorg 설정을 추가합니다.
+# 커널 부팅 파라미터를 수정하여 1280x1024 해상도를 강제로 설정하는 가장 확실한 방법을 사용합니다.
 
 # --- 함수 정의 ---
 
-# vkms 설치 함수
+# vkms 설치 함수 (강화된 버전)
 install_vkms() {
-    echo "vkms를 위한 systemd 서비스를 생성합니다..."
-    # 'here document' 문법을 사용하여 파일에 내용을 작성합니다.
-    sudo tee /etc/systemd/system/load-vkms.service > /dev/null <<'EOF'
-[Unit]
-Description=Load vkms kernel module
-After=multi-user.target
+    echo "--- 가상 모니터 설치를 시작합니다 (커널 파라미터 방식) ---"
 
-[Service]
-Type=oneshot
-ExecStart=/sbin/modprobe vkms
-RemainAfterExit=true
-
-[Install]
-WantedBy=multi-user.target
+    echo "1. 부팅 시 vkms 모듈을 로드하도록 설정합니다..."
+    sudo tee /etc/modules-load.d/vkms.conf > /dev/null <<'EOF'
+vkms
 EOF
 
-    echo "vkms 가상 모니터의 해상도를 1280x1024으로 설정하기 위한 Xorg 설정을 생성합니다..."
-    # Xorg 설정 디렉토리가 없으면 생성합니다.
-    sudo mkdir -p /etc/X11/xorg.conf.d/
+    # 기존의 systemd 서비스 방식이 남아있다면 정리합니다.
+    if [ -f /etc/systemd/system/load-vkms.service ]; then
+        echo "   > 기존 systemd 서비스를 정리합니다."
+        sudo systemctl stop load-vkms.service || true
+        sudo systemctl disable load-vkms.service || true
+        sudo rm -f /etc/systemd/system/load-vkms.service
+        sudo systemctl daemon-reload
+    fi
 
-    # cvt 1280 1024 60 명령으로 생성된 Modeline을 사용합니다.
-    sudo tee /etc/X11/xorg.conf.d/10-vkms-resolution.conf > /dev/null <<'EOF'
-Section "Monitor"
-    Identifier "VirtualMonitor"
-    Modeline "1280x1024_60.00"  109.00  1280 1368 1496 1712  1024 1027 1034 1063 -hsync +vsync
-EndSection
+    echo "2. GRUB 부트로더 설정을 백업합니다 (/etc/default/grub.bak.vkms)..."
+    sudo cp /etc/default/grub /etc/default/grub.bak.vkms
 
-Section "Device"
-    Identifier "VirtualDevice"
-    Driver "modesetting"
-EndSection
+    echo "3. GRUB 설정에 'video=Virtual-1:1280x1024@60' 커널 파라미터를 추가합니다..."
+    # 기존에 추가되었을 수 있는 video 파라미터를 먼저 제거하여 중복을 방지합니다.
+    sudo sed -i 's/ video=Virtual-1:[^"]*//g' /etc/default/grub
+    # 새로운 파라미터를 추가합니다.
+    sudo sed -i 's/\(GRUB_CMDLINE_LINUX_DEFAULT="[^"]*\)"/\1 video=Virtual-1:1280x1024@60"/' /etc/default/grub
 
-Section "Screen"
-    Identifier "VirtualScreen"
-    Device "VirtualDevice"
-    Monitor "VirtualMonitor"
-    DefaultDepth 24
-    SubSection "Display"
-        Depth 24
-        Modes "1280x1024_60.00"
-    EndSubSection
-EndSection
-EOF
+    echo "4. GRUB 부트로더를 업데이트합니다. 시스템에 따라 시간이 걸릴 수 있습니다..."
+    sudo update-grub
 
-    echo "systemd 데몬을 다시 로드합니다..."
-    sudo systemctl daemon-reexec
-    sudo systemctl daemon-reload
-
-    echo "load-vkms.service를 활성화하고 시작합니다..."
-    sudo systemctl enable load-vkms.service
-    sudo systemctl restart load-vkms.service
-
-    echo "설정이 완료되었습니다. 시스템을 재부팅하면 변경된 해상도가 적용됩니다."
-    echo "sudo reboot 명령으로 재부팅해주세요."
+    echo ""
+    echo "--- 설치가 완료되었습니다 ---"
+    echo "★★★★★ 중요: 변경 사항을 적용하려면 반드시 시스템을 재부팅해야 합니다. ★★★★★"
+    echo "sudo reboot 명령으로 지금 재부팅해주세요."
 }
 
 # vkms 완전 제거 함수 (강화된 버전)
 uninstall_vkms_thorough() {
     echo "--- 가상 모니터 설정 완전 제거를 시작합니다 ---"
 
-    echo "1. load-vkms.service를 중지하고 비활성화합니다..."
-    # 서비스가 존재하지 않아도 오류를 내지 않도록 || true를 추가합니다.
-    sudo systemctl stop load-vkms.service || true
-    sudo systemctl disable load-vkms.service || true
+    echo "1. GRUB 부트로더 설정을 복원하거나 정리합니다..."
+    if [ -f /etc/default/grub.bak.vkms ]; then
+        echo "   > 백업 파일로부터 GRUB 설정을 복원합니다."
+        sudo mv /etc/default/grub.bak.vkms /etc/default/grub
+    else
+        echo "   > 백업 파일이 없습니다. GRUB 설정에서 video 파라미터를 수동으로 제거합니다."
+        sudo sed -i 's/ video=Virtual-1:[^"]*//g' /etc/default/grub
+    fi
 
-    echo "2. 관련 설정 파일을 삭제합니다..."
-    sudo rm -f /etc/systemd/system/load-vkms.service
+    echo "2. GRUB 부트로더를 업데이트합니다..."
+    sudo update-grub
+
+    echo "3. 관련 설정 파일을 모두 삭제합니다..."
+    sudo rm -f /etc/modules-load.d/vkms.conf
     sudo rm -f /etc/X11/xorg.conf.d/10-vkms-resolution.conf
-
-    echo "3. systemd 데몬을 다시 로드합니다..."
-    sudo systemctl daemon-reexec
-    sudo systemctl daemon-reload
-
-    echo "4. 현재 세션에서 vkms 커널 모듈을 제거 시도합니다..."
-    sudo /sbin/modprobe -r vkms || echo "   > vkms 모듈이 사용 중이거나 이미 제거되었습니다. 계속 진행합니다."
-
-    echo "5. 부팅 환경(initramfs)을 업데이트하여 부팅 시 vkms가 로드되지 않도록 합니다..."
-    sudo update-initramfs -u
+    # 이전 버전의 스크립트가 생성했을 수 있는 systemd 서비스 파일도 삭제
+    sudo rm -f /etc/systemd/system/load-vkms.service
 
     # 데스크톱 환경(GNOME 등)에 저장된 사용자 디스플레이 설정을 초기화합니다.
     MONITORS_CONFIG_FILE="$HOME/.config/monitors.xml"
-    echo "6. 사용자 디스플레이 설정을 초기화합니다..."
+    echo "4. 사용자 디스플레이 설정을 초기화합니다..."
     if [ -f "$MONITORS_CONFIG_FILE" ]; then
         echo "   > 기존 디스플레이 설정 파일($MONITORS_CONFIG_FILE)을 백업하고 삭제합니다."
         mv "$MONITORS_CONFIG_FILE" "${MONITORS_CONFIG_FILE}.bak"
     else
         echo "   > 사용자 디스플레이 설정 파일이 없어 건너뜁니다."
     fi
+    
+    echo "5. 부팅 환경(initramfs)을 업데이트합니다..."
+    sudo update-initramfs -u
 
     echo ""
     echo "--- 제거 작업이 완료되었습니다 ---"
     echo "★★★★★ 중요: 모든 설정을 완전히 되돌리려면 반드시 시스템을 재부팅해야 합니다. ★★★★★"
     echo "sudo reboot 명령으로 지금 재부팅해주세요."
-    echo ""
-    echo "재부팅 후 'lsmod | grep vkms' 명령을 실행하여 아무것도 출력되지 않으면 완전히 제거된 것입니다."
 }
 
 
