@@ -31,6 +31,7 @@ if command -v pm2 >/dev/null 2>&1; then
   # 이름으로 정리(없어도 오류없이 통과)
   pm2 stop SLAMNAV2 >/dev/null 2>&1 || true
   pm2 delete SLAMNAV2 >/dev/null 2>&1 || true
+  pm2 save SLAMNAV2 >/dev/null 2>&1 || true
   log "pm2 정리 완료 (다른 pm2 앱은 건드리지 않음)."
 else
   warn "pm2 명령을 찾을 수 없습니다. pm2 정리는 건너뜁니다."
