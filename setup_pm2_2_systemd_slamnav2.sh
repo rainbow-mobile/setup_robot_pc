@@ -127,7 +127,8 @@ if ! grep -q "slamnav2-logs" "$HOME_DIR/.bashrc"; then
   cat >> "$HOME_DIR/.bashrc" <<'ALIAS'
 
 # SLAMNAV2 systemd 관리용 alias
-alias slamnav2-logs='journalctl --user -u slamnav2.service -f'
+# alias slamnav2-logs='journalctl --user -u slamnav2.service -f'
+alias slamnav2-logs='journalctl --user -u slamnav2.service -f -o cat'
 alias slamnav2-status='systemctl --user status slamnav2.service --no-pager'
 alias slamnav2-restart='systemctl --user restart slamnav2.service'
 alias slamnav2-stop='systemctl --user stop slamnav2.service'
