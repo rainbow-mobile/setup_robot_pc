@@ -1,13 +1,27 @@
 #!/bin/bash
 
 # 이 스크립트는 Intel 기반 시스템에서 vkms 커널 모듈을 사용하여 가상 모니터를 설정하거나 제거합니다.
-# 커널 부팅 파라미터를 수정하여 1280x1024 해상도를 강제로 설정하는 가장 확실한 방법을 사용합니다.
+# 커널 부팅 파라미터를 수정하여 사용자가 입력한 해상도를 강제로 설정하는 가장 확실한 방법을 사용합니다.
 
 # --- 함수 정의 ---
 
 # vkms 설치 함수 (강화된 버전)
 install_vkms() {
     echo "--- 가상 모니터 설치를 시작합니다 (커널 파라미터 방식) ---"
+
+    # 사용자로부터 해상도 입력받기
+    read -p "원하는 가로 해상도를 입력하세요 (예: 1920): " width
+    read -p "원하는 세로 해상도를 입력하세요 (예: 1080): " height
+
+    # 입력값이 숫자인지 간단히 확인
+    if ! [[ "$width" =~ ^[0-9]+$ ]] || ! [[ "$height" =~ ^[0-9]+$ ]]; then
+        echo "오류: 해상도는 숫자로만 입력해야 합니다."
+        exit 1
+    fi
+    
+    local resolution="${width}x${height}"
+    echo "해상도를 ${resolution}으로 설정합니다."
+
 
     echo "1. 부팅 시 vkms 모듈을 로드하도록 설정합니다..."
     sudo tee /etc/modules-load.d/vkms.conf > /dev/null <<'EOF'
@@ -26,11 +40,11 @@ EOF
     echo "2. GRUB 부트로더 설정을 백업합니다 (/etc/default/grub.bak.vkms)..."
     sudo cp /etc/default/grub /etc/default/grub.bak.vkms
 
-    echo "3. GRUB 설정에 'video=Virtual-1:1280x1024@60' 커널 파라미터를 추가합니다..."
+    echo "3. GRUB 설정에 'video=Virtual-1:${resolution}@60' 커널 파라미터를 추가합니다..."
     # 기존에 추가되었을 수 있는 video 파라미터를 먼저 제거하여 중복을 방지합니다.
     sudo sed -i 's/ video=Virtual-1:[^"]*//g' /etc/default/grub
     # 새로운 파라미터를 추가합니다.
-    sudo sed -i 's/\(GRUB_CMDLINE_LINUX_DEFAULT="[^"]*\)"/\1 video=Virtual-1:1280x1024@60"/' /etc/default/grub
+    sudo sed -i "s/\\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\\)\"/\\1 video=Virtual-1:${resolution}@60\"/" /etc/default/grub
 
     echo "4. GRUB 부트로더를 업데이트합니다. 시스템에 따라 시간이 걸릴 수 있습니다..."
     sudo update-grub
@@ -91,9 +105,9 @@ set -e
 # 사용자에게 설치 또는 삭제를 묻습니다.
 echo "Intel vkms 가상 모니터 설정을 시작합니다."
 echo "원하는 작업을 선택해주세요:"
-select choice in "설치 (Install 1280x1024)" "삭제 (Thorough Uninstall)" "취소 (Cancel)"; do
+select choice in "설치 (Install with custom resolution)" "삭제 (Thorough Uninstall)" "취소 (Cancel)"; do
     case $choice in
-        "설치 (Install 1280x1024)")
+        "설치 (Install with custom resolution)")
             install_vkms
             break
             ;;
