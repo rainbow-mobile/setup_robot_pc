@@ -63,25 +63,47 @@ EOF
     echo "sudo reboot 명령으로 재부팅해주세요."
 }
 
-# vkms 제거 함수
-uninstall_vkms() {
-    echo "load-vkms.service를 중지하고 비활성화합니다..."
+# vkms 완전 제거 함수 (강화된 버전)
+uninstall_vkms_thorough() {
+    echo "--- 가상 모니터 설정 완전 제거를 시작합니다 ---"
+
+    echo "1. load-vkms.service를 중지하고 비활성화합니다..."
     # 서비스가 존재하지 않아도 오류를 내지 않도록 || true를 추가합니다.
     sudo systemctl stop load-vkms.service || true
     sudo systemctl disable load-vkms.service || true
 
-    echo "/etc/systemd/system/load-vkms.service 파일을 삭제합니다..."
+    echo "2. 관련 설정 파일을 삭제합니다..."
     sudo rm -f /etc/systemd/system/load-vkms.service
-
-    echo "/etc/X11/xorg.conf.d/10-vkms-resolution.conf 파일을 삭제합니다..."
     sudo rm -f /etc/X11/xorg.conf.d/10-vkms-resolution.conf
 
-    echo "systemd 데몬을 다시 로드합니다..."
+    echo "3. systemd 데몬을 다시 로드합니다..."
     sudo systemctl daemon-reexec
     sudo systemctl daemon-reload
 
-    echo "제거가 완료되었습니다. 재부팅하면 설정이 완전히 제거됩니다."
+    echo "4. 현재 세션에서 vkms 커널 모듈을 제거 시도합니다..."
+    sudo /sbin/modprobe -r vkms || echo "   > vkms 모듈이 사용 중이거나 이미 제거되었습니다. 계속 진행합니다."
+
+    echo "5. 부팅 환경(initramfs)을 업데이트하여 부팅 시 vkms가 로드되지 않도록 합니다..."
+    sudo update-initramfs -u
+
+    # 데스크톱 환경(GNOME 등)에 저장된 사용자 디스플레이 설정을 초기화합니다.
+    MONITORS_CONFIG_FILE="$HOME/.config/monitors.xml"
+    echo "6. 사용자 디스플레이 설정을 초기화합니다..."
+    if [ -f "$MONITORS_CONFIG_FILE" ]; then
+        echo "   > 기존 디스플레이 설정 파일($MONITORS_CONFIG_FILE)을 백업하고 삭제합니다."
+        mv "$MONITORS_CONFIG_FILE" "${MONITORS_CONFIG_FILE}.bak"
+    else
+        echo "   > 사용자 디스플레이 설정 파일이 없어 건너뜁니다."
+    fi
+
+    echo ""
+    echo "--- 제거 작업이 완료되었습니다 ---"
+    echo "★★★★★ 중요: 모든 설정을 완전히 되돌리려면 반드시 시스템을 재부팅해야 합니다. ★★★★★"
+    echo "sudo reboot 명령으로 지금 재부팅해주세요."
+    echo ""
+    echo "재부팅 후 'lsmod | grep vkms' 명령을 실행하여 아무것도 출력되지 않으면 완전히 제거된 것입니다."
 }
+
 
 # --- 메인 스크립트 실행 ---
 
@@ -91,14 +113,14 @@ set -e
 # 사용자에게 설치 또는 삭제를 묻습니다.
 echo "Intel vkms 가상 모니터 설정을 시작합니다."
 echo "원하는 작업을 선택해주세요:"
-select choice in "설치 (Install 1280x1024)" "삭제 (Uninstall)" "취소 (Cancel)"; do
+select choice in "설치 (Install 1280x1024)" "삭제 (Thorough Uninstall)" "취소 (Cancel)"; do
     case $choice in
         "설치 (Install 1280x1024)")
             install_vkms
             break
             ;;
-        "삭제 (Uninstall)")
-            uninstall_vkms
+        "삭제 (Thorough Uninstall)")
+            uninstall_vkms_thorough
             break
             ;;
         "취소 (Cancel)")
