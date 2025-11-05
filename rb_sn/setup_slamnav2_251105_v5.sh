@@ -618,13 +618,11 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   # 8. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트
   ########################################
   log_msg "========================================"
-  log_msg "7. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트"
+  log_msg "8. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트"
   log_msg "========================================"
-
-  # 9. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트
   run_step "OrbbecSDK path in /etc/profile" \
       "grep -q 'OrbbecSDK/SDK/lib' /etc/profile" \
-      "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/rainbow/OrbbecSDK/SDK/lib\" >> /etc/profile'"
+      "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:$USER_HOME/OrbbecSDK/SDK/lib\" >> /etc/profile'"
 
   run_step "Re-apply profile" \
       "true" \
@@ -634,7 +632,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   # 9. USB 시리얼 설정 및 dialout 그룹 추가
   ########################################
   log_msg "========================================"
-  log_msg "8. USB 시리얼 설정 및 dialout 그룹"
+  log_msg "9. USB 시리얼 설정 및 dialout 그룹"
   log_msg "========================================"
 
   # dialout 그룹
@@ -651,7 +649,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   # 10. USB udev 규칙 설정
   ########################################
   log_msg "========================================"
-  log_msg "9. USB udev 규칙 설정"
+  log_msg "10. USB udev 규칙 설정"
   log_msg "========================================"
 
   run_step "USB udev 규칙" \
@@ -667,7 +665,7 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   # 11. (선택) 추가 환경 설정
   ########################################
   log_msg "========================================"
-  log_msg "10. 추가 환경 설정"
+  log_msg "11. 추가 환경 설정"
   log_msg "========================================"
 
   run_step "추가 환경 변수 재적용" \
@@ -719,9 +717,15 @@ run_2() {  # setup_sensor2.sh
   # 1. rplidar_sdk -----------------------------------------------------------
   if [ ! -d "$INSTALL_BASE/rplidar_sdk" ]; then
       log "[CLONE] rplidar_sdk"
-      as_user "git clone https://github.com/Slamtec/rplidar_sdk.git \"$INSTALL_BASE/rplidar_sdk\""
+      if ! as_user "git clone https://github.com/Slamtec/rplidar_sdk.git \"$INSTALL_BASE/rplidar_sdk\""; then
+          log "[ERROR] rplidar_sdk 클론 실패"
+          return 1
+      fi
       log "[BUILD] rplidar_sdk"
-      as_user "make -C \"$INSTALL_BASE/rplidar_sdk\""
+      if ! as_user "make -C \"$INSTALL_BASE/rplidar_sdk\""; then
+          log "[ERROR] rplidar_sdk 빌드 실패"
+          return 1
+      fi
   else
       log "[SKIP] rplidar_sdk 이미 존재"
   fi
@@ -729,10 +733,20 @@ run_2() {  # setup_sensor2.sh
   # 2. OrbbecSDK -------------------------------------------------------------
   if [ ! -d "$INSTALL_BASE/OrbbecSDK" ]; then
       log "[CLONE] OrbbecSDK"
-      as_user "git clone https://github.com/orbbec/OrbbecSDK.git \"$INSTALL_BASE/OrbbecSDK\""
-      as_user "cd \"$INSTALL_BASE/OrbbecSDK\" && git checkout v1.10.11"
+      if ! as_user "git clone https://github.com/orbbec/OrbbecSDK.git \"$INSTALL_BASE/OrbbecSDK\""; then
+          log "[ERROR] OrbbecSDK 클론 실패"
+          return 1
+      fi
+      if ! as_user "cd \"$INSTALL_BASE/OrbbecSDK\" && git checkout v1.10.11"; then
+          log "[ERROR] OrbbecSDK 브랜치 체크아웃 실패"
+          return 1
+      fi
       log "[UDEV] Orbbec udev 규칙 설치"
-      sudo bash "$INSTALL_BASE/OrbbecSDK/misc/scripts/install_udev_rules.sh"
+      if [ -f "$INSTALL_BASE/OrbbecSDK/misc/scripts/install_udev_rules.sh" ]; then
+          sudo bash "$INSTALL_BASE/OrbbecSDK/misc/scripts/install_udev_rules.sh"
+      else
+          log "[WARN] Orbbec udev 규칙 스크립트를 찾을 수 없음"
+      fi
   else
       log "[SKIP] OrbbecSDK 이미 존재"
   fi
@@ -740,11 +754,23 @@ run_2() {  # setup_sensor2.sh
   # 3. sick_safetyscanners_base ---------------------------------------------
   if [ ! -d "$INSTALL_BASE/sick_safetyscanners_base" ]; then
       log "[CLONE] sick_safetyscanners_base"
-      as_user "git clone https://github.com/SICKAG/sick_safetyscanners_base.git \"$INSTALL_BASE/sick_safetyscanners_base\""
+      if ! as_user "git clone https://github.com/SICKAG/sick_safetyscanners_base.git \"$INSTALL_BASE/sick_safetyscanners_base\""; then
+          log "[ERROR] sick_safetyscanners_base 클론 실패"
+          return 1
+      fi
       as_user "mkdir -p \"$INSTALL_BASE/sick_safetyscanners_base/build\""
-      as_user "cmake -S \"$INSTALL_BASE/sick_safetyscanners_base\" -B \"$INSTALL_BASE/sick_safetyscanners_base/build\""
-      as_user "make -C \"$INSTALL_BASE/sick_safetyscanners_base/build\" -j$(nproc)"
-      sudo make -C "$INSTALL_BASE/sick_safetyscanners_base/build" install
+      if ! as_user "cmake -S \"$INSTALL_BASE/sick_safetyscanners_base\" -B \"$INSTALL_BASE/sick_safetyscanners_base/build\""; then
+          log "[ERROR] sick_safetyscanners_base CMake 설정 실패"
+          return 1
+      fi
+      if ! as_user "make -C \"$INSTALL_BASE/sick_safetyscanners_base/build\" -j$(nproc)"; then
+          log "[ERROR] sick_safetyscanners_base 빌드 실패"
+          return 1
+      fi
+      if ! sudo make -C "$INSTALL_BASE/sick_safetyscanners_base/build" install; then
+          log "[ERROR] sick_safetyscanners_base 설치 실패"
+          return 1
+      fi
   else
       log "[SKIP] sick_safetyscanners_base 이미 존재"
   fi
@@ -813,11 +839,7 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   #-------------------------------------------------------------------------#
   # 0. 사용자 홈·바탕화면 디렉터리 결정
   #-------------------------------------------------------------------------#
-  if [ -n "${SUDO_USER-}" ]; then
-      USER_HOME="$(eval echo "~$SUDO_USER")"
-  else
-      USER_HOME="$HOME"
-  fi
+  # USER_HOME은 이미 전역 변수로 설정되어 있음
 
   # 후보: ~/Desktop → ~/바탕화면
   for d in "$USER_HOME/Desktop" "$USER_HOME/바탕화면"; do
@@ -858,7 +880,7 @@ run_5() { # setup_programs_slamanv_shortcut.sh
   #else
   #    ( cd "$USER_HOME/slamnav2" && git pull )
   #fi
-  if [ ! -d \"$USER_HOME/slamnav2\" ]; then
+  if [ ! -d "$USER_HOME/slamnav2" ]; then
     as_user "git clone https://github.com/rainbow-mobile/slamnav2.git \"$USER_HOME/slamnav2\""
   else
     as_user "(cd \"$USER_HOME/slamnav2\" && git pull)"
@@ -939,8 +961,15 @@ run_6() { # set_teamviewer.sh
   ARCH=$(dpkg --print-architecture)            # amd64, arm64 …
   URL="https://download.teamviewer.com/download/linux/teamviewer-host_${ARCH}.deb"
   TMP_DEB="/tmp/teamviewer.deb"
-  wget -qO "$TMP_DEB" "$URL"
-  sudo apt-get install -y "$TMP_DEB"
+  if ! wget -qO "$TMP_DEB" "$URL"; then
+      log "[ERROR] TeamViewer 다운로드 실패"
+      return 1
+  fi
+  if ! sudo apt-get install -y "$TMP_DEB"; then
+      log "[ERROR] TeamViewer 설치 실패"
+      rm -f "$TMP_DEB"
+      return 1
+  fi
   rm -f "$TMP_DEB"
   
   # 2) GDM3 설정 파일에 Wayland 비활성화 설정 적용
