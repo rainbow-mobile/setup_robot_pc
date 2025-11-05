@@ -107,7 +107,7 @@ print_installation_plan() {
   
   if [[ $MODE == "FULL" ]]; then
     echo "✅ [FULL 모드] 모든 항목 설치"
-    echo "  1) 빌드 환경·의존성 (APT 패키지, CMake, Sophus, GTSAM, OMPL 등)"
+    echo "  1) 빌드 환경·의존성 (APT 패키지, CMake, Sophus, GTSAM, OMPL, spdlog 등)"
     echo "  2) 센서 SDK 설치 (rplidar_sdk, OrbbecSDK, sick_safetyscanners_base)"
     echo "  3) obSensor udev 규칙"
     echo "  4) LD_LIBRARY_PATH 추가"
@@ -117,7 +117,7 @@ print_installation_plan() {
     echo "📦 주요 패키지:"
     echo "  - Qt 개발 환경 (qtcreator, qtbase5-dev, qtmultimedia5-dev 등)"
     echo "  - OpenCV, PCL, Eigen3, Boost"
-    echo "  - CMake 3.27.7, Sophus, GTSAM 4.2.0, OMPL 1.6.0"
+    echo "  - CMake 3.27.7, Sophus, GTSAM 4.2.0, OMPL 1.6.0, spdlog"
     echo "  - MySQL Server, SSH Server"
     echo "  - Qt game pad"
     echo "  - 스왑파일: 32GB"
@@ -602,7 +602,18 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
        make -j$NUM_CORES && \
        sudo make install && \
        cd ~"
-
+  # 7.9 spdlog (FULL 모드 전용)
+  if [[ $MODE == "FULL" ]]; then
+    run_step "spdlog" \
+      "[ -d spdlog/build ]" \
+      "git clone https://github.com/gabime/spdlog.git && \
+       cd spdlog && \
+       mkdir -p build && cd build && \
+       cmake .. -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLES=OFF && \
+       make -j$NUM_CORES && \
+       sudo make install && \
+       cd ~"
+  fi
   ########################################
   # 8. 환경 변수 재적용 및 OrbbecSDK 경로 업데이트
   ########################################
