@@ -1,0 +1,25 @@
+version: 1
+AppDir:
+  app_info:
+    id: com.rainbow.docker_manager
+    name: Docker SLAMNAV2 Manager
+    version: 1.0.0
+    exec: docker_manager
+    icon: icon.png
+
+  files:
+    - target: /usr/bin/docker_manager
+      source: docker_manager
+
+  runtimes:
+    - name: qt6
+      version: "6.5"
+      url: https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-x86_64
+
+  linuxdeploy:
+    plugin: qt
+    args:
+      - --plugin=qt
+      - --create-desktop-file
+      - --output=appimage
+

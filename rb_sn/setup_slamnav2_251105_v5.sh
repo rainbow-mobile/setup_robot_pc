@@ -691,8 +691,8 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
   # dialout 그룹
   run_step "사용자 dialout 그룹 추가" \
-      "groups $USER | grep -q dialout" \
-      "sudo adduser $USER dialout"
+      "groups $REAL_USER | grep -q dialout" \
+      "sudo adduser $REAL_USER dialout"
 
   # brltty 제거
   run_step "brltty 제거" \

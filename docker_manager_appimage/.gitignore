@@ -1,0 +1,33 @@
+# Build directories
+build/
+Build/
+*.pro.user
+*.pro.user.*
+
+# Compiled files
+*.o
+*.moc
+*.qrc.depends
+*.ui.h
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# AppImage
+*.AppImage
+*.appimage
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Qt Creator
+*.autosave
+
+# OS
+.DS_Store
+Thumbs.db
+
