@@ -486,7 +486,13 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
   run_step "스왑파일 설정 ($SWAP_SIZE)" \
       "free -h | grep -q \"Swap:.*$SWAP_SIZE\"" \
-      "sudo swapoff /swapfile &> /dev/null || true && \
+      "if [ -f /swapfile ]; then \
+         sudo swapoff /swapfile 2>/dev/null || { \
+           log_msg '[WARN] 스왑파일 비활성화 실패, 메모리 부족 가능성. 계속 진행...'; \
+           sync; sleep 2; \
+           sudo swapoff /swapfile 2>/dev/null || true; \
+         }; \
+       fi && \
        sudo rm -f /swapfile && \
        sudo fallocate -l $SWAP_SIZE /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=$SWAP_MB && \
        sudo chmod 600 /swapfile && \
@@ -531,9 +537,13 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
   # 7.2 Sophus
   run_step "Sophus" \
-      "[ -d Sophus/build ]" \
-      "git clone https://github.com/strasdat/Sophus.git && \
-       cd Sophus && \
+      "[ -d $HOME/Sophus/build ]" \
+      "if [ -d $HOME/Sophus ]; then \
+         cd $HOME/Sophus && git pull 2>/dev/null || true; \
+       else \
+         cd ~ && git clone https://github.com/strasdat/Sophus.git; \
+       fi && \
+       cd $HOME/Sophus && \
        mkdir -p build && cd build && \
        cmake .. -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DSOPHUS_USE_BASIC_LOGGING=ON && \
        make -j$NUM_CORES && \
@@ -542,10 +552,13 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
   # 7.3 GTSAM (4.2.0)
   run_step "GTSAM" \
-      "[ -d gtsam/build ]" \
-      "git clone https://github.com/borglab/gtsam.git && \
-       cd gtsam && \
-       git checkout 4.2.0 && \
+      "[ -d $HOME/gtsam/build ]" \
+      "if [ -d $HOME/gtsam ]; then \
+         cd $HOME/gtsam && git checkout 4.2.0 2>/dev/null || git pull && git checkout 4.2.0; \
+       else \
+         cd ~ && git clone https://github.com/borglab/gtsam.git && cd gtsam && git checkout 4.2.0; \
+       fi && \
+       cd $HOME/gtsam && \
        mkdir -p build && cd build && \
        cmake .. -DGTSAM_USE_SYSTEM_EIGEN=ON -DGTSAM_BUILD_TESTS=OFF -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF && \
        make -j$NUM_CORES && \
@@ -554,10 +567,13 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
   # 7.4 OMPL (1.6.0)
   run_step "OMPL" \
-      "[ -d ompl/build ]" \
-      "git clone https://github.com/ompl/ompl.git && \
-       cd ompl && \
-       git checkout 1.6.0 && \
+      "[ -d $HOME/ompl/build ]" \
+      "if [ -d $HOME/ompl ]; then \
+         cd $HOME/ompl && git checkout 1.6.0 2>/dev/null || git pull && git checkout 1.6.0; \
+       else \
+         cd ~ && git clone https://github.com/ompl/ompl.git && cd ompl && git checkout 1.6.0; \
+       fi && \
+       cd $HOME/ompl && \
        mkdir -p build && cd build && \
        cmake .. && \
        make -j$NUM_CORES && \
@@ -566,9 +582,13 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
   # 7.5 socket.io-client-cpp
   run_step "socket.io-client-cpp" \
-      "[ -d socket.io-client-cpp/build ]" \
-      "git clone --recurse-submodules https://github.com/socketio/socket.io-client-cpp.git && \
-       cd socket.io-client-cpp && \
+      "[ -d $HOME/socket.io-client-cpp/build ]" \
+      "if [ -d $HOME/socket.io-client-cpp ]; then \
+         cd $HOME/socket.io-client-cpp && git pull 2>/dev/null || true; \
+       else \
+         cd ~ && git clone --recurse-submodules https://github.com/socketio/socket.io-client-cpp.git; \
+       fi && \
+       cd $HOME/socket.io-client-cpp && \
        mkdir -p build && cd build && \
        cmake .. -DBUILD_SHARED_LIBS=ON -DLOGGING=OFF && \
        make -j$NUM_CORES && \
@@ -577,10 +597,13 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
   # 7.6 OctoMap (1.10.0)
   run_step "OctoMap" \
-      "[ -d octomap/build ]" \
-      "git clone https://github.com/OctoMap/octomap.git && \
-       cd octomap && \
-       git checkout v1.10.0 && \
+      "[ -d $HOME/octomap/build ]" \
+      "if [ -d $HOME/octomap ]; then \
+         cd $HOME/octomap && git checkout v1.10.0 2>/dev/null || git pull && git checkout v1.10.0; \
+       else \
+         cd ~ && git clone https://github.com/OctoMap/octomap.git && cd octomap && git checkout v1.10.0; \
+       fi && \
+       cd $HOME/octomap && \
        mkdir -p build && cd build && \
        cmake .. -DBUILD_DYNAMICETD3D=OFF -DBUILD_OCTOVIS_SUBPROJECT=OFF -DBUILD_TESTING=OFF && \
        make -j$NUM_CORES && \
@@ -594,9 +617,13 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
 
   # 7.8 Livox SDK2
   run_step "Livox SDK2" \
-      "[ -d Livox-SDK2/build ]" \
-      "git clone https://github.com/Livox-SDK/Livox-SDK2.git && \
-       cd Livox-SDK2 && \
+      "[ -d $HOME/Livox-SDK2/build ]" \
+      "if [ -d $HOME/Livox-SDK2 ]; then \
+         cd $HOME/Livox-SDK2 && git pull 2>/dev/null || true; \
+       else \
+         cd ~ && git clone https://github.com/Livox-SDK/Livox-SDK2.git; \
+       fi && \
+       cd $HOME/Livox-SDK2 && \
        mkdir -p build && cd build && \
        cmake .. && \
        make -j$NUM_CORES && \
@@ -605,9 +632,13 @@ gsettings set com.ubuntu.update-notifier regular-auto-launch-interval 0"
   # 7.9 spdlog (FULL 모드 전용)
   if [[ $MODE == "FULL" ]]; then
     run_step "spdlog" \
-      "[ -d spdlog/build ]" \
-      "git clone https://github.com/gabime/spdlog.git && \
-       cd spdlog && \
+      "[ -d $HOME/spdlog/build ]" \
+      "if [ -d $HOME/spdlog ]; then \
+         cd $HOME/spdlog && git pull 2>/dev/null || true; \
+       else \
+         cd ~ && git clone https://github.com/gabime/spdlog.git; \
+       fi && \
+       cd $HOME/spdlog && \
        mkdir -p build && cd build && \
        cmake .. -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLES=OFF && \
        make -j$NUM_CORES && \
