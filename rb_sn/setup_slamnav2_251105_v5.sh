@@ -464,11 +464,15 @@ run_1() { # setup_system_build_env_s100-2.sh
 
   run_step "LD_LIBRARY_PATH (rplidar_sdk)" \
       "grep 'rplidar_sdk/output/Linux/Release' /etc/profile &> /dev/null" \
-      "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\$HOME/rplidar_sdk/output/Linux/Release\" >> /etc/profile'"
+      "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:$USER_HOME/rplidar_sdk/output/Linux/Release\" >> /etc/profile'"
+      #"sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:$HOME/rplidar_sdk/output/Linux/Release\" >> /etc/profile'"
 
+  # NOTE: OrbbecSDK/lib/linux_x64 디렉토리 삭제됨
   run_step "LD_LIBRARY_PATH (OrbbecSDK)" \
       "grep 'OrbbecSDK/lib/linux_x64' /etc/profile &> /dev/null" \
-      "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\$HOME/OrbbecSDK/lib/linux_x64\" >> /etc/profile'"
+      #"sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:$HOME/OrbbecSDK/lib/linux_x64\" >> /etc/profile'"
+      "sudo sh -c 'echo \"export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:$USER_HOME/OrbbecSDK/SDK/lib\" >> /etc/profile'"
+
 
   # 프로필 재적용 + ldconfig
   
@@ -781,7 +785,22 @@ run_2() {  # setup_sensor2.sh
           return 1
       fi
   else
-      log "[SKIP] rplidar_sdk 이미 존재"
+      log "[SKIP] rplidar_sdk 디렉토리 이미 존재"
+      # 빌드된 헤더 파일 확인 및 재빌드
+      if [ ! -f "$INSTALL_BASE/rplidar_sdk/sdk/include/sl_lidar.h" ] && \
+         [ ! -f "$INSTALL_BASE/rplidar_sdk/include/sl_lidar.h" ] && \
+         [ ! -f "$INSTALL_BASE/rplidar_sdk/sdk/include/sl_lidar_driver.h" ]; then
+          log "[REBUILD] rplidar_sdk 헤더 파일이 없어 재빌드합니다"
+          if ! as_user "make -C \"$INSTALL_BASE/rplidar_sdk\" clean"; then
+              log "[WARN] rplidar_sdk clean 실패, 계속 진행"
+          fi
+          if ! as_user "make -C \"$INSTALL_BASE/rplidar_sdk\""; then
+              log "[ERROR] rplidar_sdk 재빌드 실패"
+              return 1
+          fi
+      else
+          log "[SKIP] rplidar_sdk 헤더 파일이 존재하여 빌드 건너뜀"
+      fi
   fi
 
   # 2. OrbbecSDK -------------------------------------------------------------
@@ -802,7 +821,24 @@ run_2() {  # setup_sensor2.sh
           log "[WARN] Orbbec udev 규칙 스크립트를 찾을 수 없음"
       fi
   else
-      log "[SKIP] OrbbecSDK 이미 존재"
+      log "[SKIP] OrbbecSDK 디렉토리 이미 존재"
+      # 올바른 버전인지 확인
+      if ! as_user "cd \"$INSTALL_BASE/OrbbecSDK\" && git checkout v1.10.11 2>/dev/null"; then
+          log "[WARN] OrbbecSDK 버전 체크아웃 실패, 현재 버전 유지"
+      fi
+      # 헤더 파일 확인
+      if [ ! -f "$INSTALL_BASE/OrbbecSDK/SDK/include/libobsensor/ObSensor.hpp" ] && \
+         [ ! -f "$INSTALL_BASE/OrbbecSDK/include/libobsensor/ObSensor.hpp" ] && \
+         [ ! -f "$INSTALL_BASE/OrbbecSDK/lib/linux_x64/libob.so" ]; then
+          log "[WARN] OrbbecSDK 헤더 파일 또는 라이브러리가 없습니다"
+          log "[INFO] OrbbecSDK는 수동으로 빌드해야 할 수 있습니다"
+      else
+          log "[SKIP] OrbbecSDK 헤더 파일이 존재함"
+      fi
+      # udev 규칙 재설치
+      if [ -f "$INSTALL_BASE/OrbbecSDK/misc/scripts/install_udev_rules.sh" ]; then
+          sudo bash "$INSTALL_BASE/OrbbecSDK/misc/scripts/install_udev_rules.sh"
+      fi
   fi
 
   # 3. sick_safetyscanners_base ---------------------------------------------
