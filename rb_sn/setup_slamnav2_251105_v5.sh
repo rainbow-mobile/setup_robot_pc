@@ -55,13 +55,36 @@ apt-get update -o Acquire::CompressionTypes::Order::=gz \
                  -o Acquire::http::No-Cache=true \
                  -o Acquire::https::No-Cache=true
 }
-REAL_USER=${SUDO_USER:-$(logname)}
-[[ $REAL_USER == root ]] && {
-  echo "❗ 반드시 일반 사용자에서:  sudo ./setup_amr.sh  형태로 실행하세요."
-  exit 1
-}
-USER_HOME=$(eval echo "~$REAL_USER")
-as_user()   { sudo -u "$REAL_USER" -H bash -c "$*"; }
+# 도커 환경 감지
+IS_DOCKER=false
+if [ -f /.dockerenv ] || grep -qa docker /proc/1/cgroup 2>/dev/null; then
+  IS_DOCKER=true
+fi
+
+# 사용자 확인
+if [[ $IS_DOCKER == true ]]; then
+  # 도커 환경: /home/rainbow 사용자 확인 또는 root 사용
+  if id -u rainbow >/dev/null 2>&1; then
+    REAL_USER="rainbow"
+    USER_HOME="/home/rainbow"
+    as_user()   { sudo -u "$REAL_USER" -H bash -c "$*"; }
+  else
+    # rainbow 사용자가 없으면 root 사용
+    REAL_USER="root"
+    USER_HOME="/root"
+    as_user()   { bash -c "$*"; }
+    log "[WARN] 도커 환경: rainbow 사용자를 찾을 수 없어 root로 실행합니다."
+  fi
+else
+  # 일반 환경: SUDO_USER 또는 logname 사용
+  REAL_USER=${SUDO_USER:-$(logname 2>/dev/null || echo "")}
+  [[ -z "$REAL_USER" || $REAL_USER == root ]] && {
+    echo "❗ 반드시 일반 사용자에서:  sudo ./setup_amr.sh  형태로 실행하세요."
+    exit 1
+  }
+  USER_HOME=$(eval echo "~$REAL_USER")
+  as_user()   { sudo -u "$REAL_USER" -H bash -c "$*"; }
+fi
 
 
 #──────────────────────────────────────────────────────────────────────────────
