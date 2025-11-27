@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 ###############################################################################
-# setup_modbus_root.sh (v3)
-#  · 기능: Modbus RRS 프로그램 설치 (Root 권한 Systemd 서비스) 또는 제거
-#  · 주의: 실행 파일은 항상 Root(sudo) 권한으로 실행됩니다.
+# setup_modbus_root.sh (v4)
+#  · 기능: Modbus RRS 프로그램 설치 (Root 권한 Systemd 서비스)
+#  · 수정사항: Qt Headless 모드(offscreen) 자동 적용 -> GUI 에러 방지
 ###############################################################################
 set -Eeuo pipefail
 
 # === 공통 변수 설정 ===
-# 스크립트를 sudo로 실행했더라도 원래 사용자(SUDO_USER)의 홈 경로를 찾음
 REAL_USER="${SUDO_USER:-$USER}"
 HOME_DIR="$(getent passwd "$REAL_USER" | cut -d: -f6)"
 
@@ -17,15 +16,12 @@ APP_DIR="$HOME_DIR/modbus_rrs"
 BIN_NAME="app_modbus_rrs"
 BIN_PATH="$APP_DIR/$BIN_NAME"
 
-# 설정 파일 (유저 홈에 두되, root가 읽음)
 CONF_DIR="$HOME_DIR/.config/modbus_rrs"
 ENV_FILE="$CONF_DIR/env"
 
-# Systemd 경로 (시스템 서비스는 /etc/systemd/system)
 SERVICE_NAME="modbus_rrs.service"
 SERVICE_PATH="/etc/systemd/system/$SERVICE_NAME"
 
-# Alias 등록 파일
 BASHRC="$HOME_DIR/.bashrc"
 ALIAS_MARKER="# Modbus RRS Aliases (Root)"
 
@@ -36,16 +32,14 @@ err()  { printf "\033[1;31m[에러]\033[0m %s\n" "$*"; }
 
 # === 함수 1: 설치 (Install) ===
 install_app() {
-    log ">>> 설치 프로세스를 시작합니다 (Root 권한 모드)..."
+    log ">>> 설치 프로세스를 시작합니다 (Root 권한 + Headless 모드)..."
 
     # 1. 소스코드 다운로드/업데이트
-    # 폴더 소유권은 일반 사용자($REAL_USER)로 유지하여 git 관리 용이하게 함
     if [ ! -d "$APP_DIR" ]; then
         log "리포지토리 클론: $REPO_URL"
         sudo -u "$REAL_USER" git clone "$REPO_URL" "$APP_DIR"
     else
         log "리포지토리 업데이트 (git pull)"
-        # 권한 문제 방지를 위해 안전하게 처리
         if [ -w "$APP_DIR" ]; then
             git -C "$APP_DIR" pull
         else
@@ -58,22 +52,26 @@ install_app() {
         chmod +x "$BIN_PATH"
     else
         err "실행 파일이 없습니다: $BIN_PATH"
+        err "빌드가 필요하거나 파일명이 다른지 확인해주세요."
         exit 1
     fi
 
-    # 2. 환경 설정 파일 생성
-    # 유저 홈에 만들지만, 내용은 root가 읽어서 실행함
+    # 2. 환경 설정 파일 생성 (★수정된 부분: Offscreen 옵션 추가)
     mkdir -p "$CONF_DIR"
     chown "$REAL_USER:$REAL_USER" "$CONF_DIR"
     
+    log "환경 파일 생성 (Qt Headless 모드 적용)"
     cat > "$ENV_FILE" <<EOF
 # modbus_rrs 환경 설정 (Root 실행)
+# 라이브러리 경로가 필요하면 아래 주석 해제
 # LD_LIBRARY_PATH=$APP_DIR:\$LD_LIBRARY_PATH
+
+# ★ 중요: Systemd 실행 시 화면 출력을 끄는 옵션 (GUI 에러 방지)
+QT_QPA_PLATFORM=offscreen
 EOF
     chown "$REAL_USER:$REAL_USER" "$ENV_FILE"
 
-    # 3. Systemd 시스템 서비스 파일 생성 (/etc/systemd/system)
-    # User=root 를 명시하거나 생략하면 기본적으로 root로 실행됨
+    # 3. Systemd 시스템 서비스 파일 생성
     log "시스템 서비스 파일 작성: $SERVICE_PATH"
     
     sudo tee "$SERVICE_PATH" > /dev/null <<EOF
@@ -101,19 +99,18 @@ WantedBy=multi-user.target
 EOF
 
     # 4. 서비스 등록 및 실행
-    log "서비스 등록 및 시작 중..."
+    log "서비스 등록 및 재시작 중..."
     
     sudo systemctl daemon-reload
     sudo systemctl enable "$SERVICE_NAME"
     sudo systemctl restart "$SERVICE_NAME"
 
-    # 5. Alias 등록 (일반 유저의 .bashrc에 등록하되, 명령어는 sudo 포함)
+    # 5. Alias 등록
     if ! grep -q "$ALIAS_MARKER" "$BASHRC"; then
         log "~/.bashrc에 관리용 alias 추가"
         cat >> "$BASHRC" <<EOF
 
 $ALIAS_MARKER
-# Root 서비스이므로 sudo가 필요합니다
 alias modbus-status='sudo systemctl status $SERVICE_NAME --no-pager'
 alias modbus-logs='sudo journalctl -u $SERVICE_NAME -f -o cat'
 alias modbus-restart='sudo systemctl restart $SERVICE_NAME'
@@ -125,15 +122,15 @@ EOF
 
     echo
     log "✅ 설치 완료! (서비스 상태: modbus-status)"
-    log "   ※ 주의: 이 서비스는 Root 권한으로 실행됩니다."
+    log "   - Root 권한 실행됨"
+    log "   - QT_QPA_PLATFORM=offscreen 적용됨"
 }
 
 # === 함수 2: 제거 (Uninstall) ===
 uninstall_app() {
     log ">>> 제거 프로세스를 시작합니다..."
 
-    # 1. 서비스 중지 및 비활성화 (Root 권한)
-    log "Systemd 서비스 중지..."
+    # 1. 서비스 중지
     if systemctl is-active --quiet "$SERVICE_NAME"; then
         sudo systemctl stop "$SERVICE_NAME"
     fi
@@ -141,45 +138,37 @@ uninstall_app() {
         sudo systemctl disable "$SERVICE_NAME"
     fi
 
-    # 2. 서비스 파일 삭제
+    # 2. 파일 삭제
     if [ -f "$SERVICE_PATH" ]; then
         sudo rm -f "$SERVICE_PATH"
-        log "서비스 파일 삭제됨: $SERVICE_PATH"
         sudo systemctl daemon-reload
+        log "서비스 파일 삭제됨"
     fi
 
-    # 3. 프로그램 및 설정 폴더 삭제
-    # (선택: 프로그램 소스까지 지울지 물어보거나 그냥 지움. 여기선 모두 삭제)
     if [ -d "$APP_DIR" ]; then
         sudo rm -rf "$APP_DIR"
-        log "프로그램 폴더 삭제됨: $APP_DIR"
+        log "프로그램 폴더 삭제됨"
     fi
     if [ -d "$CONF_DIR" ]; then
         sudo rm -rf "$CONF_DIR"
-        log "설정 폴더 삭제됨: $CONF_DIR"
+        log "설정 폴더 삭제됨"
     fi
 
-    # 4. .bashrc Alias 삭제
-    log ".bashrc에서 Alias 제거 중..."
-    # 마커 및 관련 줄 삭제
+    # 3. Alias 삭제
+    log "Alias 제거 중..."
     sed -i "/$ALIAS_MARKER/d" "$BASHRC"
-    sed -i '/alias modbus-status/d' "$BASHRC"
-    sed -i '/alias modbus-logs/d' "$BASHRC"
-    sed -i '/alias modbus-restart/d' "$BASHRC"
-    sed -i '/alias modbus-stop/d' "$BASHRC"
-    sed -i '/alias modbus-start/d' "$BASHRC"
-    # 빈 줄 정리
+    sed -i '/alias modbus-/d' "$BASHRC"
     sed -i '/^$/N;/^\n$/D' "$BASHRC"
 
     echo
-    log "✅ 제거 완료! (Systemd 서비스 및 파일이 삭제되었습니다.)"
+    log "✅ 제거 완료!"
 }
 
 # === 메인 메뉴 ===
 echo "==========================================="
-echo "   Modbus RRS (Root) 관리 스크립트"
+echo "   Modbus RRS (Root) 관리 스크립트 v4"
 echo "==========================================="
-echo " 1) 설치 (Install - Runs as Root)"
+echo " 1) 설치 (Install / Update Config)"
 echo " 2) 제거 (Uninstall)"
 echo "==========================================="
 read -rp "선택번호 입력 (1/2): " CHOICE
