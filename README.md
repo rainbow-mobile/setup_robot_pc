@@ -29,12 +29,14 @@
         - modbus-restart
         - modbus-stop
         - modbus-start
+        
 ### rb_sn - SLAMNAV2 관련 설치
     
-    setup_slamnav2_vx_xxxxxx.sh
+    vx_setup_slamnav2_xxxxxx.sh
     
     - light - target: 로봇 최소한을 위한 설치
     - full - target : build를 위한 설치
+    
 ### rb_sn/system
     
     vx_setup_pm2_2_systemd_slamnav2_xxxxxx.sh
