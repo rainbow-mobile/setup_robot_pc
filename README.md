@@ -20,8 +20,8 @@
 
 ### rb_modbus - 신규 생성
     
-    > setup_modbus_root.sh
-    > 
+    setup_modbus_root.sh
+    
     - 모드버스 설치 및 자동 실행
     - 모드버스 프로그램 관리 명령어
         - modbus-status
@@ -31,14 +31,14 @@
         - modbus-start
 ### rb_sn - SLAMNAV2 관련 설치
     
-    > **setup_slamnav2_v**x_xxxxxx**.sh**
-    > 
+    setup_slamnav2_vx_xxxxxx.sh
+    
     - light - target: 로봇 최소한을 위한 설치
     - full - target : build를 위한 설치
 ### rb_sn/system
     
-    > **v**x**_setup_pm2_2_systemd_slamnav2_**xxxxxx**.sh**
-    > 
+    vx_setup_pm2_2_systemd_slamnav2_xxxxxx.sh
+
     - pm2를 제거하고 systemd에서 관리 시작 (설치 / 제거)
     - SLAMNAV2 관리 명령어
         - slamnav2-status
