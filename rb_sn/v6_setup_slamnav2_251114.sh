@@ -904,6 +904,7 @@ run_4() {  # setup_env_path.sh
   BASHRC="$USER_HOME/.bashrc"
   PATHS=(
     "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:${USER_HOME}/slamnav2"
+    "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:${USER_HOME}/slamnav2/lib"
     "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:${USER_HOME}/fms2"
   )
 
