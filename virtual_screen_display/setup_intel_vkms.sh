@@ -49,6 +49,28 @@ EOF
     echo "4. GRUB 부트로더를 업데이트합니다. 시스템에 따라 시간이 걸릴 수 있습니다..."
     sudo update-grub
 
+    echo "5. xrandr 해상도 설정 서비스를 생성합니다..."
+    sudo tee /etc/systemd/system/vkms-resolution.service > /dev/null <<EOF
+[Unit]
+Description=Set vkms virtual display resolution
+After=display-manager.service
+Wants=display-manager.service
+
+[Service]
+Type=oneshot
+Environment=DISPLAY=:0
+ExecStartPre=/bin/sleep 3
+ExecStart=/usr/bin/xrandr --output Virtual-1-1 --mode ${resolution}
+RemainAfterExit=yes
+User=$SUDO_USER
+
+[Install]
+WantedBy=graphical.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable vkms-resolution.service
+
     echo ""
     echo "--- 설치가 완료되었습니다 ---"
     echo "★★★★★ 중요: 변경 사항을 적용하려면 반드시 시스템을 재부팅해야 합니다. ★★★★★"
@@ -74,8 +96,11 @@ uninstall_vkms_thorough() {
     echo "3. 관련 설정 파일을 모두 삭제합니다..."
     sudo rm -f /etc/modules-load.d/vkms.conf
     sudo rm -f /etc/X11/xorg.conf.d/10-vkms-resolution.conf
-    # 이전 버전의 스크립트가 생성했을 수 있는 systemd 서비스 파일도 삭제
+    # systemd 서비스 파일 삭제
+    sudo systemctl disable vkms-resolution.service 2>/dev/null || true
+    sudo rm -f /etc/systemd/system/vkms-resolution.service
     sudo rm -f /etc/systemd/system/load-vkms.service
+    sudo systemctl daemon-reload
 
     # 데스크톱 환경(GNOME 등)에 저장된 사용자 디스플레이 설정을 초기화합니다.
     MONITORS_CONFIG_FILE="$HOME/.config/monitors.xml"
