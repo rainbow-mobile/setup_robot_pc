@@ -40,11 +40,11 @@ EOF
     echo "2. GRUB 부트로더 설정을 백업합니다 (/etc/default/grub.bak.vkms)..."
     sudo cp /etc/default/grub /etc/default/grub.bak.vkms
 
-    echo "3. GRUB 설정에 'video=Virtual-1:${resolution}@60' 커널 파라미터를 추가합니다..."
+    echo "3. GRUB 설정에 'video=Virtual-1-1:${resolution}@60' 커널 파라미터를 추가합니다..."
     # 기존에 추가되었을 수 있는 video 파라미터를 먼저 제거하여 중복을 방지합니다.
-    sudo sed -i 's/ video=Virtual-1:[^"]*//g' /etc/default/grub
+    sudo sed -i 's/ video=Virtual-1-1:[^"]*//g' /etc/default/grub
     # 새로운 파라미터를 추가합니다.
-    sudo sed -i "s/\\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\\)\"/\\1 video=Virtual-1:${resolution}@60\"/" /etc/default/grub
+    sudo sed -i "s/\\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\\)\"/\\1 video=Virtual-1-1:${resolution}@60\"/" /etc/default/grub
 
     echo "4. GRUB 부트로더를 업데이트합니다. 시스템에 따라 시간이 걸릴 수 있습니다..."
     sudo update-grub
@@ -65,7 +65,7 @@ uninstall_vkms_thorough() {
         sudo mv /etc/default/grub.bak.vkms /etc/default/grub
     else
         echo "   > 백업 파일이 없습니다. GRUB 설정에서 video 파라미터를 수동으로 제거합니다."
-        sudo sed -i 's/ video=Virtual-1:[^"]*//g' /etc/default/grub
+        sudo sed -i 's/ video=Virtual-1-1:[^"]*//g' /etc/default/grub
     fi
 
     echo "2. GRUB 부트로더를 업데이트합니다..."
