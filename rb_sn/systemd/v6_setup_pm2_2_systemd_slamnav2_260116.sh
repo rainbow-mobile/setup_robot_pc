@@ -5,7 +5,8 @@ set -euo pipefail
 USER_NAME="${SUDO_USER:-$USER}"
 HOME_DIR="$(getent passwd "$USER_NAME" | cut -d: -f6)"
 APP_DIR="$HOME_DIR/slamnav2"
-BIN_PATH="$APP_DIR/SLAMNAV2"
+# 변경: 실행 경로를 run_app.sh로 수정
+BIN_PATH="$APP_DIR/run_app.sh"
 
 CONF_DIR="$HOME_DIR/.config/slamnav2"
 ENV_FILE="$CONF_DIR/env"
@@ -32,7 +33,7 @@ do_install() {
     # 1) 실행 파일 점검
     if [[ ! -x "$BIN_PATH" ]]; then
         err "실행 파일이 없습니다: $BIN_PATH"
-        err "경로를 확인하거나 빌드를 먼저 완료해 주세요."
+        err "경로를 확인하거나 run_app.sh에 실행 권한이 있는지 확인해 주세요."
         exit 1
     fi
 
@@ -78,6 +79,7 @@ Type=simple
 WorkingDirectory=%h/slamnav2
 EnvironmentFile=%h/.config/slamnav2/env
 ExecStartPre=/usr/bin/sleep 10
+# 변경: 실행 명령어를 run_app.sh로 수정
 ExecStart=%h/slamnav2/run_app.sh
 Restart=on-failure
 RestartSec=5
@@ -97,12 +99,7 @@ ESVC
     run_systemctl daemon-reload
     run_systemctl enable --now slamnav2.service
 
-    # 6) Alias 및 함수 등록 (업데이트: 경로 변경 적용)
-    # 기존에 등록된 slamnav2-save 함수가 있다면 업데이트를 위해 .bashrc에서 해당 섹션을 확인해야 함.
-    # 간단하게 구현하기 위해 grep으로 체크하지만, 내용이 바뀌었으므로
-    # 사용자가 수동으로 지우고 다시 등록하는 것을 권장하거나, 
-    # 아래처럼 안내 문구를 강화합니다.
-
+    # 6) Alias 및 함수 등록
     if ! grep -q "slamnav2-save" "$HOME_DIR/.bashrc"; then
         log "관리용 명령어(Alias & Function)를 ~/.bashrc에 추가합니다."
         
@@ -119,7 +116,6 @@ alias slamnav2-why='echo "=== SYSTEMD STATUS ==="; systemctl --user status slamn
 
 # 2. 로그 파일로 저장 (저장 경로: ~/slamnav2_logs)
 slamnav2-save() {
-    # 저장할 디렉터리 설정 (없으면 생성)
     local log_dir="$HOME/slamnav2_logs"
     if [ ! -d "$log_dir" ]; then
         mkdir -p "$log_dir"
@@ -148,8 +144,7 @@ EOF
         log "새로운 명령어가 추가되었습니다."
     else
         warn "이미 ~/.bashrc에 slamnav2 설정이 있습니다."
-        warn "경로 변경을 적용하려면 vi ~/.bashrc 명령어로 기존 'slamnav2-save' 함수 부분을 지운 뒤 이 스크립트를 다시 실행하세요."
-        warn "(혹은 직접 ~/.bashrc를 열어 경로 부분만 수정하셔도 됩니다.)"
+        warn "변경사항을 완벽히 적용하려면 'vi ~/.bashrc'에서 slamnav2 관련 설정을 지운 후 다시 실행하거나, 직접 ExecStart 경로를 수정하세요."
     fi
 
     log "✅ 설치 완료!"
