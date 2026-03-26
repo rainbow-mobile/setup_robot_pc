@@ -21,7 +21,7 @@ warn() { printf "\033[1;33m[경고]\033[0m %s\n" "$*"; }
 err()  { printf "\033[1;31m[에러]\033[0m %s\n" "$*"; }
 
 run_systemctl() {
-    sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/$(id -u "$USER_NAME")" systemctl --user "$@"
+    runuser -u "$USER_NAME" -- env XDG_RUNTIME_DIR="/run/user/$(id -u "$USER_NAME")" systemctl --user "$@"
 }
 
 # ==========================================
