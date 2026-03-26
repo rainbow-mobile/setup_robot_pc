@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ $EUID -ne 0 ]]; then
+    echo -e "\033[1;31m[에러]\033[0m 이 스크립트는 root 권한이 필요합니다. 'sudo $0' 으로 실행해 주세요."
+    exit 1
+fi
+
 # === 기본 설정 ===
 USER_NAME="${SUDO_USER:-$USER}"
 HOME_DIR="$(getent passwd "$USER_NAME" | cut -d: -f6)"
@@ -54,7 +59,7 @@ do_install() {
 
     log "환경 파일 생성: $ENV_FILE"
     cat > "$ENV_FILE" <<EENV
-LD_LIBRARY_PATH=$APP_DIR/bin:\$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=$APP_DIR/bin/lib:$APP_DIR/bin:\$LD_LIBRARY_PATH
 QT_PLUGIN_PATH=$APP_DIR/bin:\$QT_PLUGIN_PATH
 XDG_DATA_DIRS=/usr/share:/usr/local/share:\$XDG_DATA_DIRS
 XDG_SESSION_TYPE=$SESSION_TYPE
@@ -79,8 +84,10 @@ Type=simple
 WorkingDirectory=%h/slamnav2
 EnvironmentFile=%h/.config/slamnav2/env
 ExecStartPre=/usr/bin/sleep 10
-# 변경: 실행 명령어를 run_app.sh로 수정
-ExecStart=%h/slamnav2/run_app.sh
+ExecStart=%h/slamnav2/bin/SLAMNAV2
+CPUAffinity=1-7
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=50
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
